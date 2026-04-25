@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CartRouteImport } from './routes/cart'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
@@ -25,11 +24,6 @@ const ShopRoute = ShopRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartRoute = CartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -56,7 +50,6 @@ const Collections001Route = Collections001RouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
   '/collections/001': typeof Collections001Route
@@ -65,7 +58,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
   '/collections/001': typeof Collections001Route
@@ -75,7 +67,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
   '/collections/001': typeof Collections001Route
@@ -86,7 +77,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
-    | '/cart'
     | '/contact'
     | '/shop'
     | '/collections/001'
@@ -95,7 +85,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
-    | '/cart'
     | '/contact'
     | '/shop'
     | '/collections/001'
@@ -104,7 +93,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
-    | '/cart'
     | '/contact'
     | '/shop'
     | '/collections/001'
@@ -114,7 +102,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
-  CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
   ShopRoute: typeof ShopRoute
   Collections001Route: typeof Collections001Route
@@ -135,13 +122,6 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cart': {
-      id: '/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -178,7 +158,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
-  CartRoute: CartRoute,
   ContactRoute: ContactRoute,
   ShopRoute: ShopRoute,
   Collections001Route: Collections001Route,
