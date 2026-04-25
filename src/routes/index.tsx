@@ -6,31 +6,32 @@ import { Giveaway } from "@/components/store/Giveaway";
 import { Reviews } from "@/components/store/Reviews";
 import { FAQ } from "@/components/store/FAQ";
 import { Newsletter } from "@/components/store/Newsletter";
-import { dropProducts, previousProducts } from "@/data/products";
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "OVETONE — Drop 001" },
-      { name: "description", content: "OVETONE Drop 001. Limited quantities. No restocks." },
-      { property: "og:title", content: "OVETONE — Drop 001" },
-      { property: "og:description", content: "Limited pieces. No restocks. When it's gone, it's gone." },
+      { title: "Ovetone — Drop 001" },
+      { name: "description", content: "Ovetone Drop 001 — Set the tone. Limited quantities. No restocks." },
+      { property: "og:title", content: "Ovetone — Drop 001" },
+      { property: "og:description", content: "Set the tone. Our first drop. Limited pieces, no restocks." },
     ],
   }),
   component: Index,
 });
 
 function Index() {
+  const { products, loading } = useShopifyProducts();
   return (
     <StoreLayout>
       <Hero />
       <ProductGrid
         title="Drop 001 — Now Available"
-        products={dropProducts}
+        products={products}
+        loading={loading}
         viewAllHref="/collections/001"
       />
       <Giveaway />
-      <ProductGrid title="Previous Drops" products={previousProducts} />
       <Reviews />
       <FAQ />
       <Newsletter />
