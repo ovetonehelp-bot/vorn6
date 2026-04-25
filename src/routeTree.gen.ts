@@ -15,7 +15,6 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as Collections001RouteImport } from './routes/collections.001'
-import { Route as ProductsRouteImport } from './routes/products.'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
@@ -47,18 +46,12 @@ const Collections001Route = Collections001RouteImport.update({
   path: '/collections/001',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProductsRoute = ProductsRouteImport.update({
-  id: '/products/',
-  path: '/products/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
-  '/products/': typeof ProductsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -67,7 +60,6 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
-  '/products': typeof ProductsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -77,7 +69,6 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
-  '/products/': typeof ProductsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -88,7 +79,6 @@ export interface FileRouteTypes {
     | '/account'
     | '/contact'
     | '/shop'
-    | '/products/'
     | '/collections/001'
     | '/products/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -97,7 +87,6 @@ export interface FileRouteTypes {
     | '/account'
     | '/contact'
     | '/shop'
-    | '/products'
     | '/collections/001'
     | '/products/$slug'
   id:
@@ -106,7 +95,6 @@ export interface FileRouteTypes {
     | '/account'
     | '/contact'
     | '/shop'
-    | '/products/'
     | '/collections/001'
     | '/products/$slug'
   fileRoutesById: FileRoutesById
@@ -116,7 +104,6 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   ContactRoute: typeof ContactRoute
   ShopRoute: typeof ShopRoute
-  ProductsRoute: typeof ProductsRoute
   Collections001Route: typeof Collections001Route
   ProductsSlugRoute: typeof ProductsSlugRoute
 }
@@ -165,13 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Collections001RouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/products/': {
-      id: '/products/'
-      path: '/products'
-      fullPath: '/products/'
-      preLoaderRoute: typeof ProductsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -180,7 +160,6 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   ContactRoute: ContactRoute,
   ShopRoute: ShopRoute,
-  ProductsRoute: ProductsRoute,
   Collections001Route: Collections001Route,
   ProductsSlugRoute: ProductsSlugRoute,
 }
