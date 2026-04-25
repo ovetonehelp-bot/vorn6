@@ -41,6 +41,3 @@ export function ProductGrid({ title, products, viewAllHref, loading }: Props) {
     </section>
   );
 }
-    </section>
-  );
-}
