@@ -168,4 +168,10 @@
     to { transform: scale(1.12); }
   }
   .animate-slow-zoom { animation: slow-zoom 14s ease-out forwards; }
+
+  @keyframes slow-zoom-out {
+    from { transform: scale(1.25); }
+    to { transform: scale(1.0); }
+  }
+  .animate-slow-zoom-out { animation: slow-zoom-out 18s ease-out forwards; }
 }
