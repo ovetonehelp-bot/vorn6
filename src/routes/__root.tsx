@@ -33,9 +33,13 @@ export const Route = createRootRoute({
       { name: "description", content: "OVETONE Drop 001. Limited quantities. No restocks." },
       { name: "author", content: "OVETONE" },
       { property: "og:title", content: "OVETONE — Drop 001" },
-      { property: "og:description", content: "Limited pieces. No restocks. When it's gone, it's gone." },
+      { property: "og:description", content: "OVETONE Drop 001. Limited quantities. No restocks." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "OVETONE — Drop 001" },
+      { name: "twitter:description", content: "OVETONE Drop 001. Limited quantities. No restocks." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/537f8680-c258-479e-8f1c-8b50f5bb0857/id-preview-5a35fbf8--833f6cf5-b51b-4507-ab9e-bd9134a2ad00.lovable.app-1777121543937.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/537f8680-c258-479e-8f1c-8b50f5bb0857/id-preview-5a35fbf8--833f6cf5-b51b-4507-ab9e-bd9134a2ad00.lovable.app-1777121543937.png" },
     ],
     links: [
       {
