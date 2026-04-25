@@ -2,9 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Logo } from "./Logo";
 import { ShoppingBag, User, Menu, X } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { totalItems, setOpen: setCartOpen } = useCart();
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -21,7 +23,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
-      <div className="mx-auto flex h-16 items-center justify-between px-5 md:px-8">
+      <div className="mx-auto flex h-24 md:h-28 items-center justify-between px-5 md:px-8">
         {/* Left: nav */}
         <nav className="hidden md:flex items-center gap-8">
           {links.map((l) => (
@@ -46,7 +48,7 @@ export function Header() {
         </button>
 
         {/* Center: Logo */}
-        <Link to="/" className="absolute left-1/2 -translate-x-1/2">
+        <Link to="/" className="absolute left-1/2 -translate-x-1/2" aria-label="Ovetone home">
           <Logo variant="mark" />
         </Link>
 
@@ -59,13 +61,18 @@ export function Header() {
           >
             <User className="h-5 w-5" strokeWidth={1.5} />
           </Link>
-          <Link
-            to="/cart"
-            aria-label="Cart"
+          <button
+            onClick={() => setCartOpen(true)}
+            aria-label={`Cart (${totalItems} items)`}
             className="relative hover:opacity-60 transition-opacity"
           >
             <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
-          </Link>
+            {totalItems > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-foreground text-background text-[10px] font-semibold rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 

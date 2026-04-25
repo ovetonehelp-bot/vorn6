@@ -23,14 +23,14 @@ export function Logo({ variant = "mark", className = "", invert = false }: Props
       <img
         src={logo}
         alt="Ovetone"
-        width={40}
-        height={40}
-        className="h-9 w-9 object-contain"
+        width={96}
+        height={96}
+        className="h-16 w-16 md:h-20 md:w-20 object-contain"
         style={invert ? { filter: "invert(1)" } : undefined}
       />
       {variant === "lockup" && (
         <span
-          className="font-display tracking-brand-wide font-extrabold text-base"
+          className="font-display tracking-brand-wide font-extrabold text-lg"
           style={{ color: invert ? "var(--paper)" : "var(--ink)" }}
         >
           OVETONE
