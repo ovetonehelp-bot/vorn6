@@ -1,57 +1,93 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
-import { fetchShopifyProduct, fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
+import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { useCart } from "@/context/CartContext";
 import { Plus, Minus } from "lucide-react";
 
 export const Route = createFileRoute("/products/$slug")({
-  loader: async ({ params }) => {
-    const product = await fetchShopifyProduct(params.slug);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.product.title} — Ovetone` },
-          {
-            name: "description",
-            content: `${loaderData.product.title} from Ovetone Drop 001. ${formatPrice(loaderData.product.variants[0]?.price ?? "0")}.`,
-          },
-          { property: "og:title", content: `${loaderData.product.title} — Ovetone` },
-          { property: "og:image", content: loaderData.product.images[0]?.src ?? "" },
-        ]
-      : [],
+  head: () => ({
+    meta: [
+      { title: "Product — Ovetone" },
+      { property: "og:title", content: "Ovetone Drop 001" },
+    ],
   }),
-  notFoundComponent: () => (
-    <StoreLayout>
-      <div className="mx-auto max-w-md text-center py-32 px-5">
-        <h1 className="font-display font-black text-4xl mb-4">Product not found</h1>
-        <Link to="/shop" className="text-sm tracking-brand uppercase underline underline-offset-4">
-          Back to shop
-        </Link>
-      </div>
-    </StoreLayout>
-  ),
   component: ProductPage,
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { slug } = Route.useParams();
   const { addItem } = useCart();
-  const firstImage = product.images[0]?.src;
-  const [activeImage, setActiveImage] = useState(firstImage);
-  const [variantId, setVariantId] = useState<number>(product.variants[0]?.id ?? 0);
+  const [product, setProduct] = useState<ShopifyProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeImage, setActiveImage] = useState<string | undefined>(undefined);
+  const [variantId, setVariantId] = useState<number>(0);
   const [quantity, setQuantity] = useState(1);
   const [related, setRelated] = useState<ShopifyProduct[]>([]);
 
   useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
     fetchShopifyProducts()
-      .then((all) => setRelated(all.filter((p) => p.handle !== product.handle).slice(0, 4)))
-      .catch(() => {});
-  }, [product.handle]);
+      .then((all) => {
+        if (!mounted) return;
+        const found = all.find((p) => p.handle === slug) ?? null;
+        setProduct(found);
+        if (found) {
+          setActiveImage(found.images[0]?.src);
+          setVariantId(found.variants[0]?.id ?? 0);
+          setRelated(all.filter((p) => p.handle !== found.handle).slice(0, 4));
+        }
+      })
+      .catch((e) => {
+        if (mounted) setError(e instanceof Error ? e.message : "Failed to load product");
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <StoreLayout>
+        <div className="mx-auto max-w-7xl px-5 md:px-8 py-20">
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-16 animate-pulse">
+            <div className="aspect-[4/5] bg-muted" />
+            <div className="space-y-4">
+              <div className="h-10 w-3/4 bg-muted" />
+              <div className="h-6 w-24 bg-muted" />
+              <div className="h-4 w-full bg-muted" />
+              <div className="h-4 w-5/6 bg-muted" />
+            </div>
+          </div>
+        </div>
+      </StoreLayout>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <StoreLayout>
+        <div className="mx-auto max-w-md text-center py-32 px-5">
+          <h1 className="font-display font-black text-4xl mb-4">
+            {error ? "Couldn't load product" : "Product not found"}
+          </h1>
+          {error && <p className="text-sm text-muted-foreground mb-6">{error}</p>}
+          <Link to="/shop" className="text-sm tracking-brand uppercase underline underline-offset-4">
+            Back to shop
+          </Link>
+        </div>
+      </StoreLayout>
+    );
+  }
+
+  const firstImage = product.images[0]?.src;
 
   const variant = product.variants.find((v) => v.id === variantId) ?? product.variants[0];
   const sizeOption = product.options.find((o) => o.name.toLowerCase() === "size");
