@@ -1,4 +1,4 @@
-const SHOPIFY_DOMAIN = "ovetone.com";
+const SHOPIFY_DOMAIN = "ovetone.myshopify.com";
 
 export interface ShopifyVariant {
   id: number;
