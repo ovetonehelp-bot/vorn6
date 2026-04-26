@@ -26,6 +26,7 @@ function ProductPage() {
   const [variantId, setVariantId] = useState<number>(0);
   const [quantity, setQuantity] = useState(1);
   const [related, setRelated] = useState<ShopifyProduct[]>([]);
+  const [descExpanded, setDescExpanded] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -92,6 +93,69 @@ function ProductPage() {
   const variant = product.variants.find((v) => v.id === variantId) ?? product.variants[0];
   const sizeOption = product.options.find((o) => o.name.toLowerCase() === "size");
   const sizes = sizeOption?.values ?? [];
+  const colorOption = product.options.find((o) => {
+    const n = o.name.toLowerCase();
+    return n === "color" || n === "colour";
+  });
+  const colors = colorOption?.values ?? [];
+  const colorOptionIndex = colorOption
+    ? product.options.findIndex((o) => o.name === colorOption.name)
+    : -1;
+  const sizeOptionIndex = sizeOption
+    ? product.options.findIndex((o) => o.name === sizeOption.name)
+    : -1;
+
+  const getOptionValue = (v: typeof variant, idx: number): string | null => {
+    if (!v || idx < 0) return null;
+    if (idx === 0) return v.option1;
+    if (idx === 1) return v.option2;
+    if (idx === 2) return v.option3;
+    return null;
+  };
+
+  const currentSize = getOptionValue(variant, sizeOptionIndex);
+  const currentColor = getOptionValue(variant, colorOptionIndex);
+
+  const selectSize = (s: string) => {
+    const match =
+      product.variants.find((v) => {
+        const vSize = getOptionValue(v, sizeOptionIndex);
+        const vColor = getOptionValue(v, colorOptionIndex);
+        return vSize === s && (colorOptionIndex < 0 || vColor === currentColor);
+      }) ?? product.variants.find((v) => getOptionValue(v, sizeOptionIndex) === s);
+    if (match) setVariantId(match.id);
+  };
+
+  const selectColor = (c: string) => {
+    const match =
+      product.variants.find((v) => {
+        const vColor = getOptionValue(v, colorOptionIndex);
+        const vSize = getOptionValue(v, sizeOptionIndex);
+        return vColor === c && (sizeOptionIndex < 0 || vSize === currentSize);
+      }) ?? product.variants.find((v) => getOptionValue(v, colorOptionIndex) === c);
+    if (match) setVariantId(match.id);
+  };
+
+  // Strip HTML for description and truncate
+  const plainDesc = product.body_html
+    ? product.body_html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+    : "";
+  const DESC_LIMIT = 220;
+  const isLong = plainDesc.length > DESC_LIMIT;
+  const shortDesc = isLong ? plainDesc.slice(0, DESC_LIMIT).trimEnd() + "…" : plainDesc;
+  // Bullet split: prefer existing <li>, else split by sentence
+  const bullets: string[] = (() => {
+    const liMatches = product.body_html?.match(/<li[^>]*>([\s\S]*?)<\/li>/gi);
+    if (liMatches && liMatches.length > 0) {
+      return liMatches
+        .map((m) => m.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+    }
+    return plainDesc
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  })();
 
   const handleAdd = () => {
     if (!variant) return;
@@ -127,12 +191,12 @@ function ProductPage() {
               )}
             </div>
             {product.images.length > 1 && (
-              <div className="mt-3 grid grid-cols-4 gap-3">
-                {product.images.slice(0, 8).map((img) => (
+              <div className="mt-3 flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                {product.images.map((img) => (
                   <button
                     key={img.id}
                     onClick={() => setActiveImage(img.src)}
-                    className={`aspect-square overflow-hidden bg-muted border ${
+                    className={`flex-shrink-0 w-20 md:w-24 aspect-square overflow-hidden bg-muted border snap-start ${
                       activeImage === img.src ? "border-foreground" : "border-transparent"
                     }`}
                   >
@@ -159,26 +223,23 @@ function ProductPage() {
               </span>
             </div>
 
-            {product.body_html && (
-              <div
-                className="mt-6 text-sm text-muted-foreground leading-relaxed [&>p]:mb-3"
-                dangerouslySetInnerHTML={{ __html: product.body_html }}
-              />
-            )}
-
             {sizes.length > 0 && (
-              <div className="mt-10">
+              <div className="mt-8">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[11px] tracking-brand-wide uppercase font-semibold">Size</span>
+                  {currentSize && (
+                    <span className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">
+                      {currentSize}
+                    </span>
+                  )}
                 </div>
                 <div className="grid grid-cols-6 gap-2">
                   {sizes.map((s) => {
-                    const v = product.variants.find((vv) => vv.option1 === s);
-                    const selected = variant?.option1 === s;
+                    const selected = currentSize === s;
                     return (
                       <button
                         key={s}
-                        onClick={() => v && setVariantId(v.id)}
+                        onClick={() => selectSize(s)}
                         className={`py-3 text-xs tracking-brand uppercase font-medium border transition-colors ${
                           selected
                             ? "border-foreground bg-foreground text-background"
@@ -186,6 +247,37 @@ function ProductPage() {
                         }`}
                       >
                         {s}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {colors.length > 0 && (
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] tracking-brand-wide uppercase font-semibold">Color</span>
+                  {currentColor && (
+                    <span className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">
+                      {currentColor}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((c) => {
+                    const selected = currentColor === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => selectColor(c)}
+                        className={`px-4 py-3 text-xs tracking-brand uppercase font-medium border transition-colors ${
+                          selected
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border hover:border-foreground"
+                        }`}
+                      >
+                        {c}
                       </button>
                     );
                   })}
@@ -220,6 +312,34 @@ function ProductPage() {
             >
               Add to Cart — {formatPrice(parseFloat(variant?.price ?? "0") * quantity)}
             </button>
+
+            {plainDesc && (
+              <div className="mt-10 border-t border-border pt-6">
+                <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold mb-4">
+                  Description
+                </h2>
+                {descExpanded ? (
+                  <ul className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+                    {bullets.map((b, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-foreground/60 mt-1">•</span>
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed">{shortDesc}</p>
+                )}
+                {isLong && (
+                  <button
+                    onClick={() => setDescExpanded((v) => !v)}
+                    className="mt-3 text-xs tracking-brand-wide uppercase font-semibold underline underline-offset-4 hover:opacity-70"
+                  >
+                    {descExpanded ? "Show less" : "Read more"}
+                  </button>
+                )}
+              </div>
+            )}
 
             <ul className="mt-10 space-y-3 text-xs text-muted-foreground border-t border-border pt-6">
               <li>✦ Free U.S. shipping on orders over $100</li>
