@@ -23,9 +23,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
-      <div className="mx-auto flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
+      <div className="mx-auto flex h-24 md:h-28 items-center justify-between px-5 md:px-8">
         {/* Left: nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <Link
               key={l.to}
@@ -41,7 +41,7 @@ export function Header() {
         {/* Mobile menu trigger */}
         <button
           aria-label="Open menu"
-          className="md:hidden -ml-1 p-1.5"
+          className="md:hidden -ml-1 p-2"
           onClick={() => setOpen(true)}
         >
           <Menu className="h-5 w-5" />
@@ -49,11 +49,11 @@ export function Header() {
 
         {/* Center: Logo */}
         <Link to="/" className="absolute left-1/2 -translate-x-1/2" aria-label="Ovetone home">
-          <Logo variant="mark" className="[&_img]:!h-9 [&_img]:!w-9 md:[&_img]:!h-10 md:[&_img]:!w-10" />
+          <Logo variant="mark" />
         </Link>
 
         {/* Right: actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link
             to="/account"
             aria-label="Account"
