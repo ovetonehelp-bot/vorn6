@@ -1,18 +1,27 @@
 import { Link } from "@tanstack/react-router";
-import hero from "@/assets/hero-set-the-tone.png";
+import heroLandscape from "@/assets/hero-landscape.png";
+import heroPortrait from "@/assets/hero-portrait.png";
 
 interface HeroProps {
   image?: string;
 }
 
 export function Hero({ image }: HeroProps = {}) {
-  const src = image || hero;
   return (
     <section className="relative h-[88vh] min-h-[620px] w-full overflow-hidden bg-foreground text-background">
+      {/* Portrait image — shown when viewport is portrait (taller than wide) */}
       <img
-        src={src}
+        src={image || heroPortrait}
         alt="Ovetone Drop 001 — Set the tone"
-        className="absolute inset-0 h-full w-full object-cover animate-slow-zoom-out"
+        className="absolute inset-0 h-full w-full object-cover animate-slow-zoom-out portrait:block landscape:hidden"
+        width={1080}
+        height={1920}
+      />
+      {/* Landscape image — shown when viewport is landscape (wider than tall) */}
+      <img
+        src={heroLandscape}
+        alt="Ovetone Drop 001 — Set the tone"
+        className="absolute inset-0 h-full w-full object-cover animate-slow-zoom-out portrait:hidden landscape:block"
         width={1920}
         height={1080}
       />
