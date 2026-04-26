@@ -1,11 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import hero from "@/assets/hero-set-the-tone.png";
 
-export function Hero() {
+interface HeroProps {
+  image?: string;
+}
+
+export function Hero({ image }: HeroProps = {}) {
+  const src = image || hero;
   return (
     <section className="relative h-[88vh] min-h-[620px] w-full overflow-hidden bg-foreground text-background">
       <img
-        src={hero}
+        src={src}
         alt="Ovetone Drop 001 — Set the tone"
         className="absolute inset-0 h-full w-full object-cover animate-slow-zoom-out"
         width={1920}
