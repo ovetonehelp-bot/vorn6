@@ -65,7 +65,15 @@ function AccountInner() {
     if (error) setError(error);
     else if (mode === "signup") {
       setInfo("Welcome to Ovetone — check your inbox for your 20% off code.");
-      // Fire-and-forget welcome email
+      // Fire-and-forget: subscribe to Klaviyo + send our welcome email
+      try {
+        const { subscribeToKlaviyo } = await import("@/lib/klaviyo");
+        subscribeToKlaviyo({
+          email,
+          source: "signup",
+          properties: { discount_code: "WELCOME20" },
+        }).catch(() => {});
+      } catch {}
       try {
         const { supabase } = await import("@/integrations/supabase/client");
         supabase.functions
