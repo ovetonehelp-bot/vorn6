@@ -63,7 +63,18 @@ function AccountInner() {
     const { error } = await fn(email, password);
     setBusy(false);
     if (error) setError(error);
-    else if (mode === "signup") setInfo("Account created. Check your email to confirm if required, then sign in.");
+    else if (mode === "signup") {
+      setInfo("Welcome to Ovetone — check your inbox for your 20% off code.");
+      // Fire-and-forget welcome email
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        supabase.functions
+          .invoke("send-welcome-email", {
+            body: { email, code: "WELCOME20", source: "signup" },
+          })
+          .catch(() => {});
+      } catch {}
+    }
   };
 
   return (
