@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { subscribeToKlaviyo } from "@/lib/klaviyo";
 import logo from "@/assets/ovetone-crown.png";
 
-const STORAGE_KEY = "ovetone_discount_popup_v1";
-const MINIMIZED_KEY = "ovetone_discount_popup_minimized_v1";
-const SHOW_DELAY_MS = 4000;
+const STORAGE_KEY = "ovetone_discount_popup_v2";
+const MINIMIZED_KEY = "ovetone_discount_popup_minimized_v2";
+const SHOW_DELAY_MS = 2500;
 
 type Step = "interest" | "email" | "thanks";
 type Interest = "hoodie" | "pants" | "both";

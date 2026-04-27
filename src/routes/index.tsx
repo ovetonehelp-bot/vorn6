@@ -22,10 +22,9 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { products, loading } = useShopifyProducts();
-  const heroImage = products[0]?.images[0]?.src;
   return (
     <StoreLayout>
-      <Hero image={heroImage} />
+      <Hero />
       <ProductGrid
         title="Drop 001 — Now Available"
         products={products}
