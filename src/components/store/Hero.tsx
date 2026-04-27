@@ -20,7 +20,7 @@ export function Hero({ image }: HeroProps = {}) {
 
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-5 text-center md:px-12">
         <h1
-          className="font-display font-black text-[16vw] leading-[0.9] md:text-[11rem] tracking-tight text-background drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-fade-up"
+          className="font-display font-black text-[12vw] leading-[0.9] md:text-7xl lg:text-8xl tracking-tight text-background drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-fade-up"
         >
           SET THE TONE.
         </h1>

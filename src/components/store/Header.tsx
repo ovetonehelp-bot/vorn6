@@ -23,7 +23,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
-      <div className="mx-auto flex h-24 md:h-28 items-center justify-between px-5 md:px-8">
+      <div className="mx-auto flex h-16 md:h-20 items-center justify-between px-5 md:px-8">
         {/* Left: nav */}
         <nav className="hidden md:flex items-center gap-8">
           {links.map((l) => (

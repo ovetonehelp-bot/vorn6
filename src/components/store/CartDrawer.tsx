@@ -7,7 +7,7 @@ export function CartDrawer() {
 
   const handleCheckout = () => {
     const url = buildCheckoutUrl(items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })));
-    window.location.href = url;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   if (!isOpen) return null;

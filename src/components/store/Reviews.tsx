@@ -1,13 +1,13 @@
-import hero from "@/assets/hero-set-the-tone.png";
+import lookbook from "@/assets/lookbook-boys.png";
 
 export function Reviews() {
   return (
     <section className="bg-background">
       <div className="relative w-full overflow-hidden">
         <img
-          src={hero}
-          alt="Ovetone — Set the tone"
-          className="h-[60vh] min-h-[420px] w-full object-cover"
+          src={lookbook}
+          alt="Ovetone Drop 001 lookbook"
+          className="h-[60vh] min-h-[420px] w-full object-cover object-top"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/10 to-transparent" />
