@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { subscribeToKlaviyo } from "@/lib/klaviyo";
 import logo from "@/assets/ovetone-crown.png";
 
 const STORAGE_KEY = "ovetone_discount_popup_v1";
+const MINIMIZED_KEY = "ovetone_discount_popup_minimized_v1";
 const SHOW_DELAY_MS = 4000;
 
-type Step = "interest" | "email" | "thanks" | "klaviyo";
+type Step = "interest" | "email" | "thanks";
 type Interest = "hoodie" | "pants" | "both";
 
 export function DiscountPopup() {
   const [open, setOpen] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const [step, setStep] = useState<Step>("interest");
   const [interest, setInterest] = useState<Interest | null>(null);
   const [email, setEmail] = useState("");
@@ -19,16 +22,36 @@ export function DiscountPopup() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const seen = localStorage.getItem(STORAGE_KEY);
-    if (seen) return;
+    const completed = localStorage.getItem(STORAGE_KEY);
+    if (completed) return; // user already converted — don't show
+    const wasMinimized = localStorage.getItem(MINIMIZED_KEY);
+    if (wasMinimized) {
+      setMinimized(true);
+      return;
+    }
     const t = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
     return () => clearTimeout(t);
   }, []);
 
-  const close = () => {
+  const minimize = () => {
     setOpen(false);
+    setMinimized(true);
+    try {
+      localStorage.setItem(MINIMIZED_KEY, "1");
+    } catch {}
+  };
+
+  const reopen = () => {
+    setMinimized(false);
+    setOpen(true);
+  };
+
+  const completeAndClose = () => {
+    setOpen(false);
+    setMinimized(false);
     try {
       localStorage.setItem(STORAGE_KEY, "1");
+      localStorage.removeItem(MINIMIZED_KEY);
     } catch {}
   };
 
@@ -43,20 +66,29 @@ export function DiscountPopup() {
     setBusy(true);
     setError(null);
     try {
-      const { error: dbErr } = await supabase.from("discount_leads").insert({
+      // 1. Save the lead in our DB (best-effort)
+      try {
+        await supabase.from("discount_leads").insert({
+          email,
+          interest,
+          code: "WELCOME20",
+        });
+      } catch {}
+
+      // 2. Subscribe via Klaviyo (handles the email send on their side)
+      await subscribeToKlaviyo({
         email,
-        interest,
-        code: "WELCOME20",
+        source: "discount_popup",
+        properties: { interest, discount_code: "WELCOME20" },
       });
-      if (dbErr) throw dbErr;
-      // Try to send welcome email (will no-op if email infra not configured)
+
+      // 3. Also try our own welcome email (no-op if not configured)
       try {
         await supabase.functions.invoke("send-welcome-email", {
           body: { email, code: "WELCOME20", source: "discount_popup" },
         });
-      } catch {
-        // ignore — fall through to thanks
-      }
+      } catch {}
+
       setStep("thanks");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -65,18 +97,31 @@ export function DiscountPopup() {
     }
   };
 
+  // Minimized tag
+  if (minimized && !open) {
+    return (
+      <button
+        onClick={reopen}
+        aria-label="Open 20% off offer"
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-[70] bg-foreground text-background px-2.5 py-3 shadow-lg hover:opacity-90 transition-all flex flex-col items-center gap-1.5 [writing-mode:vertical-rl] rotate-180"
+      >
+        <span className="text-[10px] tracking-brand-wide uppercase font-bold">20% Off</span>
+      </button>
+    );
+  }
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" role="dialog" aria-modal="true">
       <div
         className="absolute inset-0 bg-foreground/60 backdrop-blur-sm animate-in fade-in"
-        onClick={close}
+        onClick={minimize}
       />
       <div className="relative w-full max-w-md bg-background shadow-2xl border border-border animate-in fade-in zoom-in-95">
         <button
-          onClick={close}
-          aria-label="Close"
+          onClick={minimize}
+          aria-label="Minimize"
           className="absolute right-3 top-3 p-2 hover:opacity-60 transition-opacity z-10"
         >
           <X className="h-4 w-4" />
@@ -115,7 +160,7 @@ export function DiscountPopup() {
                   C — Both
                 </button>
                 <button
-                  onClick={close}
+                  onClick={minimize}
                   className="mt-2 text-[11px] tracking-brand-wide uppercase text-muted-foreground hover:text-foreground underline underline-offset-4"
                 >
                   No thanks, I'd rather pay full price
@@ -149,13 +194,6 @@ export function DiscountPopup() {
                 >
                   {busy ? "…" : "Send My Code"}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setStep("klaviyo")}
-                  className="text-[11px] tracking-brand-wide uppercase text-muted-foreground hover:text-foreground underline underline-offset-4"
-                >
-                  Use other signup form
-                </button>
               </form>
             </>
           )}
@@ -170,22 +208,11 @@ export function DiscountPopup() {
                 <span className="font-semibold text-foreground">WELCOME20</span> for 20% off.
               </p>
               <button
-                onClick={close}
+                onClick={completeAndClose}
                 className="mt-7 w-full bg-foreground text-background py-4 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-opacity"
               >
                 Start Shopping
               </button>
-            </>
-          )}
-
-          {step === "klaviyo" && (
-            <>
-              <h2 className="font-display font-black text-2xl md:text-3xl tracking-tight leading-tight">
-                Sign up below
-              </h2>
-              <div className="mt-6">
-                <div className="klaviyo-form-TECgZW" />
-              </div>
             </>
           )}
         </div>
@@ -193,3 +220,6 @@ export function DiscountPopup() {
     </div>
   );
 }
+
+// Mark the lucide Tag import as used (kept for future tag iconography)
+void Tag;
