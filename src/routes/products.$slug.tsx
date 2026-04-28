@@ -305,6 +305,8 @@ function ProductPage() {
               <div className="grid grid-cols-3 gap-2">
                 {bundles.map((b, i) => {
                   const total = basePrice * b.units * b.multiplier;
+                  const compareTotal = parseFloat(displayUnitPrice) * b.units;
+                  const hasSavings = b.units > 1;
                   const isBest = i === 2;
                   return (
                     <button
@@ -329,6 +331,11 @@ function ProductPage() {
                       <div className="mt-1 font-display font-black text-lg leading-tight">
                         {formatPrice(total)}
                       </div>
+                      {hasSavings && (
+                        <div className="text-[10px] text-muted-foreground line-through">
+                          {formatPrice(compareTotal)}
+                        </div>
+                      )}
                       {b.label && (
                         <div className="mt-1 inline-block text-[9px] tracking-brand-wide uppercase font-bold text-emerald-600 dark:text-emerald-400">
                           {b.label}
