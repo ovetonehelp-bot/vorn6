@@ -3,10 +3,12 @@ import { X, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { subscribeToKlaviyo } from "@/lib/klaviyo";
 import logo from "@/assets/ovetone-crown.png";
+import popupImage from "@/assets/lookbook-boys.png";
 
-const STORAGE_KEY = "ovetone_discount_popup_v2";
-const MINIMIZED_KEY = "ovetone_discount_popup_minimized_v2";
-const SHOW_DELAY_MS = 2500;
+const STORAGE_KEY = "ovetone_discount_popup_v3";
+const MINIMIZED_KEY = "ovetone_discount_popup_minimized_v3";
+const TRIED_KEY = "ovetone_discount_popup_tried_v3";
+const SHOW_DELAY_MS = 4000;
 
 type Step = "interest" | "email" | "thanks";
 type Interest = "hoodie" | "pants" | "both";
@@ -22,15 +24,24 @@ export function DiscountPopup() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const onOpenRequested = () => {
+      setMinimized(false);
+      setStep("interest");
+      setOpen(true);
+    };
+    window.addEventListener("ovetone:open-discount-popup", onOpenRequested);
     const completed = localStorage.getItem(STORAGE_KEY);
-    if (completed) return; // user already converted — don't show
+    if (completed) return () => window.removeEventListener("ovetone:open-discount-popup", onOpenRequested);
     const wasMinimized = localStorage.getItem(MINIMIZED_KEY);
     if (wasMinimized) {
       setMinimized(true);
-      return;
+      return () => window.removeEventListener("ovetone:open-discount-popup", onOpenRequested);
     }
     const t = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("ovetone:open-discount-popup", onOpenRequested);
+    };
   }, []);
 
   const minimize = () => {
@@ -38,6 +49,7 @@ export function DiscountPopup() {
     setMinimized(true);
     try {
       localStorage.setItem(MINIMIZED_KEY, "1");
+      localStorage.setItem(TRIED_KEY, "1");
     } catch {}
   };
 
@@ -51,6 +63,7 @@ export function DiscountPopup() {
     setMinimized(false);
     try {
       localStorage.setItem(STORAGE_KEY, "1");
+      localStorage.setItem(TRIED_KEY, "1");
       localStorage.removeItem(MINIMIZED_KEY);
     } catch {}
   };
@@ -103,7 +116,7 @@ export function DiscountPopup() {
       <button
         onClick={reopen}
         aria-label="Open 20% off offer"
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-[70] bg-foreground text-background px-2.5 py-3 shadow-lg hover:opacity-90 transition-all flex flex-col items-center gap-1.5 [writing-mode:vertical-rl] rotate-180"
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-[70] bg-background text-foreground border border-foreground/15 border-l-0 px-2.5 py-3 shadow-lg hover:bg-foreground hover:text-background transition-all flex flex-col items-center gap-1.5 [writing-mode:vertical-rl] rotate-180"
       >
         <span className="text-[10px] tracking-brand-wide uppercase font-bold">20% Off</span>
       </button>
@@ -118,7 +131,7 @@ export function DiscountPopup() {
         className="absolute inset-0 bg-foreground/60 backdrop-blur-sm animate-in fade-in"
         onClick={minimize}
       />
-      <div className="relative w-full max-w-md bg-background shadow-2xl border border-border animate-in fade-in zoom-in-95">
+      <div className="relative w-full max-w-3xl bg-background shadow-2xl border border-border animate-in fade-in zoom-in-95 grid md:grid-cols-2 overflow-hidden">
         <button
           onClick={minimize}
           aria-label="Minimize"
@@ -127,16 +140,17 @@ export function DiscountPopup() {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="px-6 pt-10 pb-8 md:px-10 md:pt-12 md:pb-10 text-center">
+        <div className="px-6 pt-10 pb-8 md:px-10 md:pt-12 md:pb-10 text-center order-2 md:order-1 flex flex-col justify-center">
           <img src={logo} alt="Ovetone" className="mx-auto h-14 w-14 object-contain mb-4" />
 
           {step === "interest" && (
             <>
-              <h2 className="font-display font-black text-3xl md:text-4xl tracking-tight leading-tight">
-                Get 20% Off
-                <br />
-                Your First Order
+              <h2 className="font-display font-black text-2xl md:text-3xl tracking-tight leading-tight">
+                You've Got
               </h2>
+              <p className="font-display font-black text-4xl md:text-5xl tracking-tight leading-none mt-1">
+                20% OFF
+              </p>
               <p className="mt-3 text-xs tracking-brand-wide uppercase text-muted-foreground">
                 Tell us what you're looking for
               </p>
@@ -216,6 +230,12 @@ export function DiscountPopup() {
             </>
           )}
         </div>
+
+        <div
+          className="hidden md:block order-1 md:order-2 bg-muted bg-cover bg-center"
+          style={{ backgroundImage: `url(${popupImage})` }}
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
