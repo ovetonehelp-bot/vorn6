@@ -159,19 +159,19 @@ export function DiscountPopup() {
                   onClick={() => pickInterest("hoodie")}
                   className="w-full bg-foreground text-background py-4 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-opacity"
                 >
-                  A — Hoodie
+                  Hoodie
                 </button>
                 <button
                   onClick={() => pickInterest("pants")}
                   className="w-full bg-foreground text-background py-4 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-opacity"
                 >
-                  B — Pants
+                  Pants
                 </button>
                 <button
                   onClick={() => pickInterest("both")}
                   className="w-full bg-foreground text-background py-4 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-opacity"
                 >
-                  C — Both
+                  Both
                 </button>
                 <button
                   onClick={minimize}
