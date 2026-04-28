@@ -172,10 +172,23 @@ function ProductPage() {
     );
   };
 
+  // Bundle pricing logic — actual price per unit always >= base price.
+  // Customer sees option 1 inflated +20%, option 2 inflated +10%, option 3 = base.
+  const basePrice = parseFloat(variant?.price ?? "0");
+  const bundles = [
+    { units: 1, multiplier: 1.20, label: null as string | null, badge: null as string | null },
+    { units: 2, multiplier: 1.10, label: "10% OFF", badge: "POPULAR" },
+    { units: 3, multiplier: 1.00, label: "20% OFF", badge: "BEST VALUE" },
+  ];
+  const selectBundle = (units: number) => {
+    setQuantity(units);
+    handleAdd();
+  };
+
   return (
     <StoreLayout>
-      <section className="mx-auto max-w-7xl px-5 md:px-8 pt-8 pb-20 md:pt-12 md:pb-28">
-        <p className="text-[11px] tracking-brand-wide uppercase text-muted-foreground mb-6">
+      <section className="mx-auto max-w-7xl px-5 md:px-8 pt-4 pb-12 md:pt-6 md:pb-20 animate-fade-in">
+        <p className="text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-3">
           <Link to="/" className="hover:text-foreground">Home</Link>
           <span className="mx-2">/</span>
           <Link to="/shop" className="hover:text-foreground">Shop</Link>
@@ -183,20 +196,20 @@ function ProductPage() {
           {product.title}
         </p>
 
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
-          <div>
+        <div className="grid md:grid-cols-2 gap-5 md:gap-10 lg:gap-14">
+          <div className="animate-fade-in" style={{ animationDelay: "0.05s", animationFillMode: "backwards" }}>
             <div className="aspect-[4/5] bg-muted overflow-hidden">
               {activeImage && (
-                <img src={activeImage} alt={product.title} width={800} height={1000} className="h-full w-full object-cover" />
+                <img src={activeImage} alt={product.title} width={800} height={1000} className="h-full w-full object-cover transition-transform duration-700 hover:scale-105" />
               )}
             </div>
             {product.images.length > 1 && (
-              <div className="mt-3 flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
                 {product.images.map((img) => (
                   <button
                     key={img.id}
                     onClick={() => setActiveImage(img.src)}
-                    className={`flex-shrink-0 w-20 md:w-24 aspect-square overflow-hidden bg-muted border snap-start ${
+                    className={`flex-shrink-0 w-16 md:w-20 aspect-square overflow-hidden bg-muted border snap-start transition-all hover:opacity-80 ${
                       activeImage === img.src ? "border-foreground" : "border-transparent"
                     }`}
                   >
@@ -207,25 +220,25 @@ function ProductPage() {
             )}
           </div>
 
-          <div className="md:pt-4">
-            <h1 className="font-display font-black text-3xl md:text-5xl tracking-tight">
+          <div className="md:pt-2 animate-fade-in" style={{ animationDelay: "0.15s", animationFillMode: "backwards" }}>
+            <h1 className="font-display font-black text-2xl md:text-4xl tracking-tight">
               {product.title}
             </h1>
-            <p className="mt-3 text-xl">{formatPrice(variant?.price ?? "0")}</p>
+            <p className="mt-2 text-lg">{formatPrice(variant?.price ?? "0")}</p>
 
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
               </span>
-              <span className="text-xs tracking-brand-wide uppercase font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-emerald-600 dark:text-emerald-400">
                 In Stock — Ships in 24 hrs
               </span>
             </div>
 
             {sizes.length > 0 && (
-              <div className="mt-8">
-                <div className="flex items-center justify-between mb-3">
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] tracking-brand-wide uppercase font-semibold">Size</span>
                   {currentSize && (
                     <span className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">
@@ -233,14 +246,14 @@ function ProductPage() {
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-6 gap-1.5">
                   {sizes.map((s) => {
                     const selected = currentSize === s;
                     return (
                       <button
                         key={s}
                         onClick={() => selectSize(s)}
-                        className={`py-3 text-xs tracking-brand uppercase font-medium border transition-colors ${
+                        className={`py-2.5 text-xs tracking-brand uppercase font-medium border transition-all duration-200 hover:-translate-y-0.5 ${
                           selected
                             ? "border-foreground bg-foreground text-background"
                             : "border-border hover:border-foreground"
@@ -255,8 +268,8 @@ function ProductPage() {
             )}
 
             {colors.length > 0 && (
-              <div className="mt-8">
-                <div className="flex items-center justify-between mb-3">
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] tracking-brand-wide uppercase font-semibold">Color</span>
                   {currentColor && (
                     <span className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">
@@ -264,14 +277,14 @@ function ProductPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {colors.map((c) => {
                     const selected = currentColor === c;
                     return (
                       <button
                         key={c}
                         onClick={() => selectColor(c)}
-                        className={`px-4 py-3 text-xs tracking-brand uppercase font-medium border transition-colors ${
+                        className={`px-4 py-2.5 text-xs tracking-brand uppercase font-medium border transition-all duration-200 hover:-translate-y-0.5 ${
                           selected
                             ? "border-foreground bg-foreground text-background"
                             : "border-border hover:border-foreground"
@@ -285,21 +298,21 @@ function ProductPage() {
               </div>
             )}
 
-            <div className="mt-8">
-              <span className="text-[11px] tracking-brand-wide uppercase font-semibold mb-3 block">Quantity</span>
+            <div className="mt-5">
+              <span className="text-[11px] tracking-brand-wide uppercase font-semibold mb-2 block">Quantity</span>
               <div className="inline-flex items-center border border-border">
                 <button
                   aria-label="Decrease quantity"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="p-3 hover:bg-muted"
+                  className="p-2.5 hover:bg-muted transition-colors"
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </button>
-                <span className="px-6 text-sm tabular-nums font-medium">{quantity}</span>
+                <span className="px-5 text-sm tabular-nums font-medium">{quantity}</span>
                 <button
                   aria-label="Increase quantity"
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="p-3 hover:bg-muted"
+                  className="p-2.5 hover:bg-muted transition-colors"
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </button>
@@ -308,18 +321,65 @@ function ProductPage() {
 
             <button
               onClick={handleAdd}
-              className="mt-8 w-full bg-foreground text-background py-4 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-opacity"
+              className="mt-5 w-full bg-foreground text-background py-3.5 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
               Add to Cart — {formatPrice(parseFloat(variant?.price ?? "0") * quantity)}
             </button>
 
+            {/* Bundle & Save section */}
+            <div className="mt-7 border-t border-border pt-5">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Bundle & Save</h2>
+                <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">Limited time</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {bundles.map((b, i) => {
+                  const total = basePrice * b.units * b.multiplier;
+                  const isBest = i === 2;
+                  return (
+                    <button
+                      key={b.units}
+                      onClick={() => selectBundle(b.units)}
+                      className={`relative text-left border p-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
+                        isBest
+                          ? "border-foreground bg-foreground/5"
+                          : "border-border hover:border-foreground"
+                      }`}
+                    >
+                      {b.badge && (
+                        <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[9px] tracking-brand-wide uppercase font-bold whitespace-nowrap ${
+                          isBest ? "bg-emerald-500 text-white" : "bg-foreground text-background"
+                        }`}>
+                          {b.badge}
+                        </span>
+                      )}
+                      <div className="text-[10px] tracking-brand-wide uppercase font-semibold text-muted-foreground">
+                        {b.units} {b.units === 1 ? "Unit" : "Units"}
+                      </div>
+                      <div className="mt-1 font-display font-black text-lg leading-tight">
+                        {formatPrice(total)}
+                      </div>
+                      {b.label && (
+                        <div className="mt-1 inline-block text-[9px] tracking-brand-wide uppercase font-bold text-emerald-600 dark:text-emerald-400">
+                          {b.label}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[10px] text-muted-foreground">
+                Save more when you buy more. Discount applied at checkout.
+              </p>
+            </div>
+
             {plainDesc && (
-              <div className="mt-10 border-t border-border pt-6">
-                <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold mb-4">
+              <div className="mt-7 border-t border-border pt-5">
+                <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold mb-3">
                   Description
                 </h2>
                 {descExpanded ? (
-                  <ul className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+                  <ul className="space-y-1.5 text-sm text-muted-foreground leading-relaxed animate-fade-in">
                     {bullets.map((b, i) => (
                       <li key={i} className="flex gap-2">
                         <span className="text-foreground/60 mt-1">•</span>
@@ -341,7 +401,7 @@ function ProductPage() {
               </div>
             )}
 
-            <ul className="mt-10 space-y-3 text-xs text-muted-foreground border-t border-border pt-6">
+            <ul className="mt-7 space-y-2 text-xs text-muted-foreground border-t border-border pt-5">
               <li>✦ Free U.S. shipping on orders over $100</li>
               <li>✦ Ships within 24 hours</li>
               <li>✦ 14-day returns & exchanges</li>
