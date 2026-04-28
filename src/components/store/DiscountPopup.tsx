@@ -131,7 +131,7 @@ export function DiscountPopup() {
         className="absolute inset-0 bg-foreground/60 backdrop-blur-sm animate-in fade-in"
         onClick={minimize}
       />
-      <div className="relative w-full max-w-3xl bg-background shadow-2xl border border-border animate-in fade-in zoom-in-95 grid md:grid-cols-2 overflow-hidden">
+      <div className="relative w-full max-w-3xl max-h-[95vh] overflow-y-auto bg-background shadow-2xl border border-border animate-in fade-in zoom-in-95 grid grid-cols-1 md:grid-cols-2">
         <button
           onClick={minimize}
           aria-label="Minimize"
@@ -140,7 +140,7 @@ export function DiscountPopup() {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="px-6 pt-10 pb-8 md:px-10 md:pt-12 md:pb-10 text-center order-2 md:order-1 flex flex-col justify-center">
+        <div className="px-5 pt-6 pb-6 md:px-10 md:pt-12 md:pb-10 text-center order-2 md:order-1 flex flex-col justify-center">
           <img src={logo} alt="Ovetone" className="mx-auto h-14 w-14 object-contain mb-4" />
 
           {step === "interest" && (
@@ -232,7 +232,7 @@ export function DiscountPopup() {
         </div>
 
         <div
-          className="hidden md:block order-1 md:order-2 bg-muted bg-cover bg-center"
+          className="order-1 md:order-2 bg-muted bg-cover bg-center h-40 md:h-auto md:min-h-[420px]"
           style={{ backgroundImage: `url(${popupImage})` }}
           aria-hidden="true"
         />
