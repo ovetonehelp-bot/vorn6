@@ -24,15 +24,24 @@ export function DiscountPopup() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const onOpenRequested = () => {
+      setMinimized(false);
+      setStep("interest");
+      setOpen(true);
+    };
+    window.addEventListener("ovetone:open-discount-popup", onOpenRequested);
     const completed = localStorage.getItem(STORAGE_KEY);
-    if (completed) return; // user already converted — don't show
+    if (completed) return () => window.removeEventListener("ovetone:open-discount-popup", onOpenRequested);
     const wasMinimized = localStorage.getItem(MINIMIZED_KEY);
     if (wasMinimized) {
       setMinimized(true);
-      return;
+      return () => window.removeEventListener("ovetone:open-discount-popup", onOpenRequested);
     }
     const t = setTimeout(() => setOpen(true), SHOW_DELAY_MS);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("ovetone:open-discount-popup", onOpenRequested);
+    };
   }, []);
 
   const minimize = () => {
