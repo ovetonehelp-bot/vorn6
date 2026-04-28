@@ -4,7 +4,6 @@ import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { useCart } from "@/context/CartContext";
-import { Plus, Minus } from "lucide-react";
 
 export const Route = createFileRoute("/products/$slug")({
   head: () => ({
@@ -24,7 +23,6 @@ function ProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | undefined>(undefined);
   const [variantId, setVariantId] = useState<number>(0);
-  const [quantity, setQuantity] = useState(1);
   const [related, setRelated] = useState<ShopifyProduct[]>([]);
   const [descExpanded, setDescExpanded] = useState(false);
 
@@ -157,8 +155,21 @@ function ProductPage() {
       .filter((s) => s.length > 0);
   })();
 
-  const handleAdd = () => {
+  // Bundle pricing logic — customer never sees the raw base price.
+  // Option 1 = base +20%, Option 2 = base +10%, Option 3 = base (still labeled as biggest discount).
+  const basePrice = parseFloat(variant?.price ?? "0");
+  const bundles = [
+    { units: 1, multiplier: 1.20, label: null as string | null, badge: null as string | null },
+    { units: 2, multiplier: 1.10, label: "10% OFF", badge: "POPULAR" },
+    { units: 3, multiplier: 1.00, label: "20% OFF", badge: "BEST VALUE" },
+  ];
+  // Display price = the inflated "bundle 1" per-unit price (never show raw base).
+  const displayUnitPrice = (basePrice * 1.20).toFixed(2);
+
+  const selectBundle = (units: number, multiplier: number) => {
     if (!variant) return;
+    // Per-unit price stored in cart so totals reflect the chosen bundle exactly.
+    const perUnit = (basePrice * multiplier).toFixed(2);
     addItem(
       {
         variantId: variant.id,
@@ -166,23 +177,10 @@ function ProductPage() {
         productTitle: product.title,
         variantTitle: variant.title,
         image: firstImage ?? "",
-        price: variant.price,
+        price: perUnit,
       },
-      quantity,
+      units,
     );
-  };
-
-  // Bundle pricing logic — actual price per unit always >= base price.
-  // Customer sees option 1 inflated +20%, option 2 inflated +10%, option 3 = base.
-  const basePrice = parseFloat(variant?.price ?? "0");
-  const bundles = [
-    { units: 1, multiplier: 1.20, label: null as string | null, badge: null as string | null },
-    { units: 2, multiplier: 1.10, label: "10% OFF", badge: "POPULAR" },
-    { units: 3, multiplier: 1.00, label: "20% OFF", badge: "BEST VALUE" },
-  ];
-  const selectBundle = (units: number) => {
-    setQuantity(units);
-    handleAdd();
   };
 
   return (
@@ -224,7 +222,7 @@ function ProductPage() {
             <h1 className="font-display font-black text-2xl md:text-4xl tracking-tight">
               {product.title}
             </h1>
-            <p className="mt-2 text-lg">{formatPrice(variant?.price ?? "0")}</p>
+            <p className="mt-2 text-lg">{formatPrice(displayUnitPrice)}</p>
 
             <div className="mt-3 flex items-center gap-2">
               <span className="relative flex h-2 w-2">
@@ -298,38 +296,10 @@ function ProductPage() {
               </div>
             )}
 
-            <div className="mt-5">
-              <span className="text-[11px] tracking-brand-wide uppercase font-semibold mb-2 block">Quantity</span>
-              <div className="inline-flex items-center border border-border">
-                <button
-                  aria-label="Decrease quantity"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="p-2.5 hover:bg-muted transition-colors"
-                >
-                  <Minus className="h-3.5 w-3.5" />
-                </button>
-                <span className="px-5 text-sm tabular-nums font-medium">{quantity}</span>
-                <button
-                  aria-label="Increase quantity"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="p-2.5 hover:bg-muted transition-colors"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={handleAdd}
-              className="mt-5 w-full bg-foreground text-background py-3.5 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-all hover:-translate-y-0.5 active:translate-y-0"
-            >
-              Add to Cart — {formatPrice(parseFloat(variant?.price ?? "0") * quantity)}
-            </button>
-
             {/* Bundle & Save section */}
-            <div className="mt-7 border-t border-border pt-5">
+            <div className="mt-6 border-t border-border pt-5">
               <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Bundle & Save</h2>
+                <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Choose Your Bundle</h2>
                 <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">Limited time</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -339,7 +309,7 @@ function ProductPage() {
                   return (
                     <button
                       key={b.units}
-                      onClick={() => selectBundle(b.units)}
+                      onClick={() => selectBundle(b.units, b.multiplier)}
                       className={`relative text-left border p-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
                         isBest
                           ? "border-foreground bg-foreground/5"
@@ -369,7 +339,7 @@ function ProductPage() {
                 })}
               </div>
               <p className="mt-2 text-[10px] text-muted-foreground">
-                Save more when you buy more. Discount applied at checkout.
+                Tap a bundle to add it to your cart.
               </p>
             </div>
 
