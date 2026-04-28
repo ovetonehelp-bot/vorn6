@@ -40,6 +40,7 @@ export function DiscountPopup() {
     setMinimized(true);
     try {
       localStorage.setItem(MINIMIZED_KEY, "1");
+      localStorage.setItem(TRIED_KEY, "1");
     } catch {}
   };
 
@@ -53,6 +54,7 @@ export function DiscountPopup() {
     setMinimized(false);
     try {
       localStorage.setItem(STORAGE_KEY, "1");
+      localStorage.setItem(TRIED_KEY, "1");
       localStorage.removeItem(MINIMIZED_KEY);
     } catch {}
   };
