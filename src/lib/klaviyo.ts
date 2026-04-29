@@ -40,10 +40,40 @@ export async function subscribeToKlaviyo({
 }: SubscribeArgs): Promise<void> {
   if (typeof window === "undefined") return;
 
-  // 1) Subscribe to the list (this is the call that adds them as a profile
-  //    on the list — visible under Audience → Lists & segments → Email List).
+  // 1) Create/update the profile via Klaviyo's client API. This guarantees
+  //    the email lands in your Klaviyo account as a profile (visible under
+  //    Audience → Profiles), even if list subscription requires double opt-in.
   try {
-    await fetch(
+    const profileRes = await fetch(
+      `https://a.klaviyo.com/client/profiles/?company_id=${KLAVIYO_COMPANY_ID}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          revision: "2024-10-15",
+        },
+        body: JSON.stringify({
+          data: {
+            type: "profile",
+            attributes: {
+              email,
+              properties: { source, ...properties },
+            },
+          },
+        }),
+      }
+    );
+    if (!profileRes.ok) {
+      console.warn("[klaviyo] profile create failed", profileRes.status, await profileRes.text());
+    }
+  } catch (e) {
+    console.warn("[klaviyo] profile create error", e);
+  }
+
+  // 2) Subscribe the profile to the list (single opt-in if your list is set
+  //    that way; otherwise Klaviyo sends a confirmation email).
+  try {
+    const subRes = await fetch(
       `https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY_ID}`,
       {
         method: "POST",
@@ -62,6 +92,9 @@ export async function subscribeToKlaviyo({
                   attributes: {
                     email,
                     properties: { source, ...properties },
+                    subscriptions: {
+                      email: { marketing: { consent: "SUBSCRIBED" } },
+                    },
                   },
                 },
               },
@@ -73,8 +106,11 @@ export async function subscribeToKlaviyo({
         }),
       }
     );
-  } catch {
-    // ignore — onsite queue below is a fallback
+    if (!subRes.ok) {
+      console.warn("[klaviyo] subscription failed", subRes.status, await subRes.text());
+    }
+  } catch (e) {
+    console.warn("[klaviyo] subscription error", e);
   }
 
   // 2) Identify + event via onsite SDK so flows triggered by events still fire.
