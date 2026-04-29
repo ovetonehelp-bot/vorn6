@@ -8,11 +8,11 @@ interface HeroProps {
 export function Hero({ image }: HeroProps = {}) {
   const src = image || hero;
   return (
-    <section className="relative h-[68vh] min-h-[460px] max-h-[720px] w-full overflow-hidden bg-foreground text-background">
+    <section className="relative h-[58vh] min-h-[420px] max-h-[640px] w-full overflow-hidden bg-foreground text-background">
       <img
         src={src}
         alt="Ovetone Drop 001 — Set the tone"
-        className="absolute inset-0 h-full w-full object-cover animate-slow-zoom-out"
+        className="absolute inset-0 h-full w-full object-cover object-top animate-slow-zoom-out"
         width={1920}
         height={1080}
       />
