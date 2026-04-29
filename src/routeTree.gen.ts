@@ -15,6 +15,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as Collections001RouteImport } from './routes/collections.001'
+import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
@@ -46,12 +47,18 @@ const Collections001Route = Collections001RouteImport.update({
   path: '/collections/001',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/admin/leads',
+  path: '/admin/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/contact': typeof ContactRoute
   '/shop': typeof ShopRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/contact'
     | '/shop'
+    | '/admin/leads'
     | '/collections/001'
     | '/products/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/contact'
     | '/shop'
+    | '/admin/leads'
     | '/collections/001'
     | '/products/$slug'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/contact'
     | '/shop'
+    | '/admin/leads'
     | '/collections/001'
     | '/products/$slug'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   ContactRoute: typeof ContactRoute
   ShopRoute: typeof ShopRoute
+  AdminLeadsRoute: typeof AdminLeadsRoute
   Collections001Route: typeof Collections001Route
   ProductsSlugRoute: typeof ProductsSlugRoute
 }
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Collections001RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/leads': {
+      id: '/admin/leads'
+      path: '/admin/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   ContactRoute: ContactRoute,
   ShopRoute: ShopRoute,
+  AdminLeadsRoute: AdminLeadsRoute,
   Collections001Route: Collections001Route,
   ProductsSlugRoute: ProductsSlugRoute,
 }

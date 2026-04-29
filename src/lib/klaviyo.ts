@@ -23,10 +23,15 @@ interface SubscribeArgs {
   properties?: Record<string, any>;
 }
 
+// Public Klaviyo identifiers — safe to ship in client code.
+const KLAVIYO_COMPANY_ID = "TECgZW";
+const KLAVIYO_LIST_ID = "Uj9Xrf";
+
 /**
- * Identify the visitor in Klaviyo and fire a "Subscribed" event.
- * Klaviyo's flows can then trigger the welcome email automatically —
- * the user never sees a Klaviyo form, just our branded popup.
+ * Subscribe a visitor to our Klaviyo list AND fire a tracked event.
+ * Uses Klaviyo's client API (no private key required) so the email
+ * actually lands in your "Email List" inside Klaviyo, where flows can
+ * pick it up to send the welcome / discount email.
  */
 export async function subscribeToKlaviyo({
   email,
@@ -35,13 +40,45 @@ export async function subscribeToKlaviyo({
 }: SubscribeArgs): Promise<void> {
   if (typeof window === "undefined") return;
 
-  const profile = {
-    $email: email,
-    $source: source,
-    ...properties,
-  };
+  // 1) Subscribe to the list (this is the call that adds them as a profile
+  //    on the list — visible under Audience → Lists & segments → Email List).
+  try {
+    await fetch(
+      `https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY_ID}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          revision: "2024-10-15",
+        },
+        body: JSON.stringify({
+          data: {
+            type: "subscription",
+            attributes: {
+              custom_source: source,
+              profile: {
+                data: {
+                  type: "profile",
+                  attributes: {
+                    email,
+                    properties: { source, ...properties },
+                  },
+                },
+              },
+            },
+            relationships: {
+              list: { data: { type: "list", id: KLAVIYO_LIST_ID } },
+            },
+          },
+        }),
+      }
+    );
+  } catch {
+    // ignore — onsite queue below is a fallback
+  }
 
-  // Ensure the onsite queue exists (the SDK script will drain it on load).
+  // 2) Identify + event via onsite SDK so flows triggered by events still fire.
+  const profile = { $email: email, $source: source, ...properties };
   window._klOnsite = window._klOnsite || [];
   window._klOnsite.push(["identify", profile]);
   window._klOnsite.push([
@@ -49,12 +86,10 @@ export async function subscribeToKlaviyo({
     "Subscribed to Newsletter",
     { source, ...properties },
   ]);
-
-  // If the SDK is already loaded, fire directly too.
   try {
     window.klaviyo?.identify?.(profile);
     window.klaviyo?.track?.("Subscribed to Newsletter", { source, ...properties });
   } catch {
-    // ignore — queue path will pick it up
+    // ignore
   }
 }
