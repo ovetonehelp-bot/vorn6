@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -7,6 +7,13 @@ import { useCart } from "@/context/CartContext";
 export function Header() {
   const [open, setOpen] = useState(false);
   const { totalItems, setOpen: setCartOpen } = useCart();
+  const [bump, setBump] = useState(0);
+  const prevTotal = useRef(totalItems);
+
+  useEffect(() => {
+    if (totalItems > prevTotal.current) setBump((n) => n + 1);
+    prevTotal.current = totalItems;
+  }, [totalItems]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -68,7 +75,10 @@ export function Header() {
           >
             <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
             {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-foreground text-background text-[10px] font-semibold rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
+              <span
+                key={bump}
+                className="absolute -top-1.5 -right-1.5 bg-foreground text-background text-[10px] font-semibold rounded-full h-4 min-w-4 px-1 flex items-center justify-center animate-badge-pop"
+              >
                 {totalItems}
               </span>
             )}

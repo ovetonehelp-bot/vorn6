@@ -26,6 +26,7 @@ function ProductPage() {
   const [variantId, setVariantId] = useState<number>(0);
   const [related, setRelated] = useState<ShopifyProduct[]>([]);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [addedBundle, setAddedBundle] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -192,6 +193,8 @@ function ProductPage() {
       product_handle: product.handle,
       product_title: product.title,
     });
+    setAddedBundle(units);
+    window.setTimeout(() => setAddedBundle((v) => (v === units ? null : v)), 1200);
   };
 
   return (
@@ -323,12 +326,17 @@ function ProductPage() {
                     <button
                       key={b.units}
                       onClick={() => selectBundle(b.units, b.multiplier)}
-                      className={`relative text-left border p-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
+                      className={`relative text-left border p-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95 ${
                         isBest
                           ? "border-foreground bg-foreground/5"
                           : "border-border hover:border-foreground"
-                      }`}
+                      } ${addedBundle === b.units ? "animate-button-pulse" : ""}`}
                     >
+                      {addedBundle === b.units && (
+                        <span className="pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 text-[10px] tracking-brand-wide uppercase font-bold text-emerald-600 dark:text-emerald-400 animate-float-up">
+                          + Added
+                        </span>
+                      )}
                       {b.badge && (
                         <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[9px] tracking-brand-wide uppercase font-bold whitespace-nowrap ${
                           isBest ? "bg-emerald-500 text-white" : "bg-foreground text-background"

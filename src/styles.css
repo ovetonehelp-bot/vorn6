@@ -174,4 +174,28 @@
     to { transform: scale(1.0); }
   }
   .animate-slow-zoom-out { animation: slow-zoom-out 18s ease-out forwards; }
+
+  /* Scroll reveal — initial state then play on visible */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; will-change: opacity, transform; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  @keyframes badge-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.45); }
+    100% { transform: scale(1); }
+  }
+  .animate-badge-pop { animation: badge-pop 0.4s ease-out; }
+
+  @keyframes button-pulse {
+    0% { box-shadow: 0 0 0 0 oklch(0.55 0.18 145 / 0.5); }
+    100% { box-shadow: 0 0 0 14px oklch(0.55 0.18 145 / 0); }
+  }
+  .animate-button-pulse { animation: button-pulse 0.6s ease-out; }
+
+  @keyframes float-up {
+    0% { opacity: 0; transform: translate(-50%, 0) scale(0.9); }
+    20% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -56px) scale(1); }
+  }
+  .animate-float-up { animation: float-up 1.2s ease-out forwards; }
 }
