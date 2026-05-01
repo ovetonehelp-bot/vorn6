@@ -12,7 +12,7 @@ export function Hero({ image }: HeroProps = {}) {
       <img
         src={src}
         alt="Ovetone Drop 001 — Set the tone"
-        className="absolute inset-0 h-full w-full object-cover object-top animate-slow-zoom-out"
+        className="absolute inset-0 h-full w-full object-cover object-[center_25%] animate-slow-zoom-out"
         width={1920}
         height={1080}
       />

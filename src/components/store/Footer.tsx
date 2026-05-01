@@ -42,6 +42,14 @@ export function Footer() {
             loading="lazy"
           />
         </div>
+        <div className="mt-6 flex justify-center">
+          <Link
+            to="/admin/leads"
+            className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground tracking-wide"
+          >
+            ·
+          </Link>
+        </div>
       </div>
     </footer>
   );
