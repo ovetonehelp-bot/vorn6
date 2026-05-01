@@ -54,6 +54,7 @@ function AdminLeadsPage() {
   const [events, setEvents] = useState<AnalyticsEvent[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [range, setRange] = useState<Range>("7d");
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -75,6 +76,10 @@ function AdminLeadsPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
+    loadData();
+  }, [isAdmin]);
+
+  const loadData = () => {
     setLoadingData(true);
     Promise.all([
       supabase.from("discount_leads").select("*").order("created_at", { ascending: false }),
@@ -84,7 +89,24 @@ function AdminLeadsPage() {
       setEvents((e.data ?? []) as AnalyticsEvent[]);
       setLoadingData(false);
     });
-  }, [isAdmin]);
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm("Delete ALL analytics events and promo subscribers? This cannot be undone.")) return;
+    if (!confirm("Are you absolutely sure? This wipes every record.")) return;
+    setClearing(true);
+    const [evRes, ldRes] = await Promise.all([
+      supabase.from("analytics_events").delete().not("id", "is", null),
+      supabase.from("discount_leads").delete().not("id", "is", null),
+    ]);
+    setClearing(false);
+    if (evRes.error || ldRes.error) {
+      alert("Failed to clear: " + (evRes.error?.message ?? ldRes.error?.message));
+      return;
+    }
+    setEvents([]);
+    setLeads([]);
+  };
 
   const filtered = useMemo(() => {
     const start = rangeStart(range);
@@ -214,6 +236,16 @@ function AdminLeadsPage() {
           </div>
           <button onClick={() => signOut()} className="text-[11px] tracking-brand-wide uppercase underline underline-offset-4">
             Sign Out
+          </button>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleClearAll}
+            disabled={clearing}
+            className="text-[11px] tracking-brand-wide uppercase border border-destructive text-destructive px-3 py-1.5 hover:bg-destructive hover:text-destructive-foreground transition-colors disabled:opacity-50"
+          >
+            {clearing ? "Clearing…" : "Clear All Data"}
           </button>
         </div>
 
