@@ -4,6 +4,7 @@ import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { useCart } from "@/context/CartContext";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/products/$slug")({
   head: () => ({
@@ -39,6 +40,11 @@ function ProductPage() {
           setActiveImage(found.images[0]?.src);
           setVariantId(found.variants[0]?.id ?? 0);
           setRelated(all.filter((p) => p.handle !== found.handle).slice(0, 4));
+          trackEvent({
+            event_type: "product_view",
+            product_handle: found.handle,
+            product_title: found.title,
+          });
         }
       })
       .catch((e) => {
@@ -181,6 +187,11 @@ function ProductPage() {
       },
       units,
     );
+    trackEvent({
+      event_type: "add_to_cart",
+      product_handle: product.handle,
+      product_title: product.title,
+    });
   };
 
   return (

@@ -80,11 +80,25 @@ export function DiscountPopup() {
     setError(null);
     try {
       // 1. Save the lead in our DB (best-effort)
+      let country: string | undefined;
+      try {
+        const cached = localStorage.getItem("ovetone_country");
+        if (cached) country = cached;
+        else {
+          const res = await fetch("https://ipapi.co/json/");
+          const j = await res.json();
+          if (j?.country_name) {
+            country = j.country_name;
+            localStorage.setItem("ovetone_country", country!);
+          }
+        }
+      } catch {}
       try {
         await supabase.from("discount_leads").insert({
           email,
           interest,
           code: "WELCOME20",
+          country,
         });
       } catch {}
 

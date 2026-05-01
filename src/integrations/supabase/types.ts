@@ -14,9 +14,43 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          country: string | null
+          created_at: string
+          event_type: string
+          id: string
+          path: string | null
+          product_handle: string | null
+          product_title: string | null
+          session_id: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          path?: string | null
+          product_handle?: string | null
+          product_title?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          path?: string | null
+          product_handle?: string | null
+          product_title?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       discount_leads: {
         Row: {
           code: string
+          country: string | null
           created_at: string
           email: string
           id: string
@@ -24,6 +58,7 @@ export type Database = {
         }
         Insert: {
           code?: string
+          country?: string | null
           created_at?: string
           email: string
           id?: string
@@ -31,6 +66,7 @@ export type Database = {
         }
         Update: {
           code?: string
+          country?: string | null
           created_at?: string
           email?: string
           id?: string
