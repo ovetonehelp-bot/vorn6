@@ -21,7 +21,7 @@ export function CartDrawer() {
     // Only count as a real conversion / accepted offer here.
     items.forEach((it) => {
       trackEvent({
-        event_type: "accept_offer" as "add_to_cart",
+        event_type: "accept_offer",
         product_handle: it.productHandle,
         product_title: it.productTitle,
       });
