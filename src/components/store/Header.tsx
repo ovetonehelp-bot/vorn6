@@ -81,7 +81,11 @@ export function Header() {
             data-cart-icon
             className="relative hover:opacity-60 transition-opacity"
           >
-            <ShoppingBag key={`s-${shake}`} className="h-5 w-5 animate-cart-shake" strokeWidth={1.5} />
+            <ShoppingBag
+              key={`s-${shake}`}
+              className={`h-5 w-5 ${shake > 0 ? "animate-cart-shake" : ""}`}
+              strokeWidth={1.5}
+            />
             {totalItems > 0 && (
               <span
                 key={bump}
