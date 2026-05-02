@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { useCart } from "@/context/CartContext";
 import { trackEvent } from "@/lib/analytics";
+import { flyToCart } from "@/lib/flyToCart";
 
 export const Route = createFileRoute("/products/$slug")({
   head: () => ({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/products/$slug")({
 
 function ProductPage() {
   const { slug } = Route.useParams();
-  const { addItem } = useCart();
+  const { addItem, setOpen: setCartOpen } = useCart();
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,7 @@ function ProductPage() {
   const [related, setRelated] = useState<ShopifyProduct[]>([]);
   const [descExpanded, setDescExpanded] = useState(false);
   const [addedBundle, setAddedBundle] = useState<number | null>(null);
+  const [selectedBundle, setSelectedBundle] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -173,28 +175,50 @@ function ProductPage() {
   // Display price = the inflated "bundle 1" per-unit price (never show raw base).
   const displayUnitPrice = (basePrice * 1.20).toFixed(2);
 
-  const selectBundle = (units: number, multiplier: number) => {
+  const selectBundle = (units: number, multiplier: number, sourceEl: HTMLElement | null) => {
     if (!variant) return;
+    setSelectedBundle(units);
     // Per-unit price stored in cart so totals reflect the chosen bundle exactly.
     const perUnit = (basePrice * multiplier).toFixed(2);
-    addItem(
-      {
-        variantId: variant.id,
-        productHandle: product.handle,
-        productTitle: product.title,
-        variantTitle: variant.title,
-        image: firstImage ?? "",
-        price: perUnit,
-      },
-      units,
-    );
-    trackEvent({
-      event_type: "add_to_cart",
-      product_handle: product.handle,
-      product_title: product.title,
-    });
     setAddedBundle(units);
     window.setTimeout(() => setAddedBundle((v) => (v === units ? null : v)), 1200);
+
+    const doAdd = () => {
+      addItem(
+        {
+          variantId: variant.id,
+          productHandle: product.handle,
+          productTitle: product.title,
+          variantTitle: variant.title,
+          image: firstImage ?? "",
+          price: perUnit,
+        },
+        units,
+        { openDrawer: false },
+      );
+      trackEvent({
+        event_type: "add_to_cart",
+        product_handle: product.handle,
+        product_title: product.title,
+      });
+    };
+
+    // Brief highlight, then fly-to-cart, then update count + open drawer.
+    window.setTimeout(() => {
+      if (sourceEl && firstImage) {
+        flyToCart(sourceEl, firstImage, () => {
+          doAdd();
+          window.setTimeout(() => {
+            setCartOpen(true);
+            setSelectedBundle(null);
+          }, 350);
+        });
+      } else {
+        doAdd();
+        setCartOpen(true);
+        setSelectedBundle(null);
+      }
+    }, 220);
   };
 
   return (
@@ -325,11 +349,13 @@ function ProductPage() {
                   return (
                     <button
                       key={b.units}
-                      onClick={() => selectBundle(b.units, b.multiplier)}
+                      onClick={(e) => selectBundle(b.units, b.multiplier, e.currentTarget)}
                       className={`relative text-left border p-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95 ${
-                        isBest
-                          ? "border-foreground bg-foreground/5"
-                          : "border-border hover:border-foreground"
+                        selectedBundle === b.units
+                          ? "border-foreground bg-foreground text-background scale-[1.03]"
+                          : isBest
+                            ? "border-foreground bg-foreground/5"
+                            : "border-border hover:border-foreground"
                       } ${addedBundle === b.units ? "animate-button-pulse" : ""}`}
                     >
                       {addedBundle === b.units && (
