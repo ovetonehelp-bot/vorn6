@@ -9,11 +9,18 @@ export function Header() {
   const { totalItems, setOpen: setCartOpen } = useCart();
   const [bump, setBump] = useState(0);
   const prevTotal = useRef(totalItems);
+  const [shake, setShake] = useState(0);
 
   useEffect(() => {
     if (totalItems > prevTotal.current) setBump((n) => n + 1);
     prevTotal.current = totalItems;
   }, [totalItems]);
+
+  useEffect(() => {
+    const onShake = () => setShake((n) => n + 1);
+    window.addEventListener("cart:shake", onShake);
+    return () => window.removeEventListener("cart:shake", onShake);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -71,9 +78,10 @@ export function Header() {
           <button
             onClick={() => setCartOpen(true)}
             aria-label={`Cart (${totalItems} items)`}
+            data-cart-icon
             className="relative hover:opacity-60 transition-opacity"
           >
-            <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+            <ShoppingBag key={`s-${shake}`} className="h-5 w-5 animate-cart-shake" strokeWidth={1.5} />
             {totalItems > 0 && (
               <span
                 key={bump}
