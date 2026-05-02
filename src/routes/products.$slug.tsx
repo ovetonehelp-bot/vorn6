@@ -208,11 +208,15 @@ function ProductPage() {
       if (sourceEl && firstImage) {
         flyToCart(sourceEl, firstImage, () => {
           doAdd();
-          window.setTimeout(() => setCartOpen(true), 350);
+          window.setTimeout(() => {
+            setCartOpen(true);
+            setSelectedBundle(null);
+          }, 350);
         });
       } else {
         doAdd();
         setCartOpen(true);
+        setSelectedBundle(null);
       }
     }, 220);
   };
