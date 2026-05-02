@@ -168,12 +168,11 @@ function ProductPage() {
   // Option 1 = base +20%, Option 2 = base +10%, Option 3 = base (still labeled as biggest discount).
   const basePrice = parseFloat(variant?.price ?? "0");
   const bundles = [
-    { units: 1, multiplier: 1.20, label: null as string | null, badge: null as string | null },
-    { units: 2, multiplier: 1.10, label: "10% OFF", badge: "POPULAR" },
-    { units: 3, multiplier: 1.00, label: "20% OFF", badge: "BEST VALUE" },
+    { units: 1, multiplier: 1.00, label: null as string | null, badge: null as string | null },
+    { units: 2, multiplier: 0.90, label: "10% OFF", badge: "POPULAR" },
+    { units: 3, multiplier: 0.80, label: "20% OFF", badge: "BEST VALUE" },
   ];
-  // Display price = the inflated "bundle 1" per-unit price (never show raw base).
-  const displayUnitPrice = (basePrice * 1.20).toFixed(2);
+  const displayUnitPrice = basePrice.toFixed(2);
 
   const selectBundle = (units: number, multiplier: number, sourceEl: HTMLElement | null) => {
     if (!variant) return;
@@ -194,7 +193,7 @@ function ProductPage() {
           price: perUnit,
         },
         units,
-        { openDrawer: false },
+        { openDrawer: false, replace: true },
       );
       trackEvent({
         event_type: "add_to_cart",
@@ -211,14 +210,14 @@ function ProductPage() {
           window.setTimeout(() => {
             setCartOpen(true);
             setSelectedBundle(null);
-          }, 350);
+          }, 200);
         });
       } else {
         doAdd();
         setCartOpen(true);
         setSelectedBundle(null);
       }
-    }, 220);
+    }, 120);
   };
 
   return (
@@ -340,10 +339,10 @@ function ProductPage() {
                 <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Choose Your Bundle</h2>
                 <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">Limited time</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 pt-3">
                 {bundles.map((b, i) => {
                   const total = basePrice * b.units * b.multiplier;
-                  const compareTotal = parseFloat(displayUnitPrice) * b.units;
+                  const compareTotal = basePrice * b.units;
                   const hasSavings = b.units > 1;
                   const isBest = i === 2;
                   return (
