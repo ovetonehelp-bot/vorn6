@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { StoreLayout } from "@/components/store/StoreLayout";
@@ -345,9 +345,8 @@ function AdminLeadsPage() {
                   const isOpen = openCountry === c.country;
                   const sessionList = isOpen ? [...c.sessions.entries()] : [];
                   return (
-                    <>
+                    <Fragment key={c.country}>
                       <tr
-                        key={c.country}
                         onClick={() => setOpenCountry(isOpen ? null : c.country)}
                         className="border-t border-border cursor-pointer hover:bg-muted/40"
                       >
@@ -397,7 +396,7 @@ function AdminLeadsPage() {
                           </tr>
                         );
                       })}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>
