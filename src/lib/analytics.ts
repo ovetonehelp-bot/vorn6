@@ -33,7 +33,7 @@ async function getCountry(): Promise<string | null> {
 }
 
 interface TrackArgs {
-  event_type: "product_view" | "add_to_cart" | "page_view";
+  event_type: "product_view" | "add_to_cart" | "page_view" | "accept_offer";
   product_handle?: string;
   product_title?: string;
   path?: string;

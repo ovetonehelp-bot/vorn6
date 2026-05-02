@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { StoreLayout } from "@/components/store/StoreLayout";
@@ -55,6 +55,7 @@ function AdminLeadsPage() {
   const [loadingData, setLoadingData] = useState(false);
   const [range, setRange] = useState<Range>("7d");
   const [clearing, setClearing] = useState(false);
+  const [openCountry, setOpenCountry] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -119,11 +120,13 @@ function AdminLeadsPage() {
     const { evs } = filtered;
     const views = evs.filter((e) => e.event_type === "product_view");
     const adds = evs.filter((e) => e.event_type === "add_to_cart");
+    const accepts = evs.filter((e) => e.event_type === "accept_offer");
     const uniqueVisitors = new Set(evs.map((e) => e.session_id).filter(Boolean)).size;
-    const conversion = views.length > 0 ? (adds.length / views.length) * 100 : 0;
+    const conversion = views.length > 0 ? (accepts.length / views.length) * 100 : 0;
     return {
       views: views.length,
       adds: adds.length,
+      accepts: accepts.length,
       uniqueVisitors,
       conversion,
       leads: filtered.lds.length,
@@ -131,27 +134,42 @@ function AdminLeadsPage() {
   }, [filtered]);
 
   const productStats = useMemo(() => {
-    const map = new Map<string, { title: string; views: number; adds: number }>();
+    const map = new Map<string, { title: string; views: number; adds: number; accepts: number }>();
     for (const e of filtered.evs) {
       if (!e.product_handle) continue;
       const k = e.product_handle;
-      const cur = map.get(k) ?? { title: e.product_title ?? k, views: 0, adds: 0 };
+      const cur = map.get(k) ?? { title: e.product_title ?? k, views: 0, adds: 0, accepts: 0 };
       if (e.event_type === "product_view") cur.views++;
       if (e.event_type === "add_to_cart") cur.adds++;
+      if (e.event_type === "accept_offer") cur.accepts++;
       map.set(k, cur);
     }
     return [...map.entries()]
-      .map(([handle, v]) => ({ handle, ...v, rate: v.views ? (v.adds / v.views) * 100 : 0 }))
+      .map(([handle, v]) => ({ handle, ...v, rate: v.views ? (v.accepts / v.views) * 100 : 0 }))
       .sort((a, b) => b.views - a.views);
   }, [filtered]);
 
+  // Country -> { sessions: Map<sessionId, events[]>, total events count }
   const countryStats = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, { sessions: Map<string, AnalyticsEvent[]>; events: number }>();
     for (const e of filtered.evs) {
       const c = e.country ?? "Unknown";
-      map.set(c, (map.get(c) ?? 0) + 1);
+      const sid = e.session_id ?? "anon";
+      const cur = map.get(c) ?? { sessions: new Map(), events: 0 };
+      cur.events++;
+      const arr = cur.sessions.get(sid) ?? [];
+      arr.push(e);
+      cur.sessions.set(sid, arr);
+      map.set(c, cur);
     }
-    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    return [...map.entries()]
+      .map(([country, v]) => ({
+        country,
+        events: v.events,
+        visitors: v.sessions.size,
+        sessions: v.sessions,
+      }))
+      .sort((a, b) => b.visitors - a.visitors);
   }, [filtered]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -263,10 +281,11 @@ function AdminLeadsPage() {
         </div>
 
         {/* Stat cards */}
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-6 gap-3">
           <StatCard label="Visitors" value={stats.uniqueVisitors} />
           <StatCard label="Product Views" value={stats.views} />
           <StatCard label="Add to Cart" value={stats.adds} />
+          <StatCard label="Accepted Offers" value={stats.accepts} />
           <StatCard label="Conversion" value={`${stats.conversion.toFixed(1)}%`} />
           <StatCard label="Subscribers" value={stats.leads} />
         </div>
@@ -283,18 +302,20 @@ function AdminLeadsPage() {
                   <th className="px-4 py-3 text-left">Product</th>
                   <th className="px-4 py-3 text-right">Views</th>
                   <th className="px-4 py-3 text-right">Added to Cart</th>
+                  <th className="px-4 py-3 text-right">Accepted</th>
                   <th className="px-4 py-3 text-right">Conv. Rate</th>
                 </tr>
               </thead>
               <tbody>
                 {productStats.length === 0 && (
-                  <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">No product data yet.</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No product data yet.</td></tr>
                 )}
                 {productStats.map((p) => (
                   <tr key={p.handle} className="border-t border-border">
                     <td className="px-4 py-3">{p.title}</td>
                     <td className="px-4 py-3 text-right">{p.views}</td>
                     <td className="px-4 py-3 text-right">{p.adds}</td>
+                    <td className="px-4 py-3 text-right">{p.accepts}</td>
                     <td className="px-4 py-3 text-right">{p.rate.toFixed(1)}%</td>
                   </tr>
                 ))}
@@ -306,24 +327,78 @@ function AdminLeadsPage() {
         {/* Top countries */}
         <section className="mt-10">
           <h2 className="font-display font-black text-xl tracking-tight">Top Countries</h2>
+          <p className="text-[11px] text-muted-foreground mt-1">Tap a country to see each visitor's product activity.</p>
           <div className="mt-4 border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted text-[11px] tracking-brand-wide uppercase">
                 <tr>
                   <th className="px-4 py-3 text-left">Country</th>
+                  <th className="px-4 py-3 text-right">Visitors</th>
                   <th className="px-4 py-3 text-right">Events</th>
                 </tr>
               </thead>
               <tbody>
                 {countryStats.length === 0 && (
-                  <tr><td colSpan={2} className="px-4 py-8 text-center text-muted-foreground">No data yet.</td></tr>
+                  <tr><td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">No data yet.</td></tr>
                 )}
-                {countryStats.map(([c, n]) => (
-                  <tr key={c} className="border-t border-border">
-                    <td className="px-4 py-3">{c}</td>
-                    <td className="px-4 py-3 text-right">{n}</td>
-                  </tr>
-                ))}
+                {countryStats.map((c) => {
+                  const isOpen = openCountry === c.country;
+                  const sessionList = isOpen ? [...c.sessions.entries()] : [];
+                  return (
+                    <Fragment key={c.country}>
+                      <tr
+                        onClick={() => setOpenCountry(isOpen ? null : c.country)}
+                        className="border-t border-border cursor-pointer hover:bg-muted/40"
+                      >
+                        <td className="px-4 py-3 font-medium">
+                          <span className="inline-block w-3 mr-1 text-muted-foreground">{isOpen ? "▾" : "▸"}</span>
+                          {c.country}
+                        </td>
+                        <td className="px-4 py-3 text-right">{c.visitors}</td>
+                        <td className="px-4 py-3 text-right">{c.events}</td>
+                      </tr>
+                      {isOpen && sessionList.map(([sid, evs], idx) => {
+                        const productMap = new Map<string, { title: string; views: number; adds: number; accepts: number }>();
+                        for (const e of evs) {
+                          if (!e.product_handle) continue;
+                          const cur = productMap.get(e.product_handle) ?? { title: e.product_title ?? e.product_handle, views: 0, adds: 0, accepts: 0 };
+                          if (e.event_type === "product_view") cur.views++;
+                          if (e.event_type === "add_to_cart") cur.adds++;
+                          if (e.event_type === "accept_offer") cur.accepts++;
+                          productMap.set(e.product_handle, cur);
+                        }
+                        const products = [...productMap.values()].sort((a, b) => b.views - a.views);
+                        const lastSeen = evs.reduce((d, e) => {
+                          const t = new Date(e.created_at).getTime();
+                          return t > d ? t : d;
+                        }, 0);
+                        return (
+                          <tr key={sid} className="border-t border-border bg-muted/20">
+                            <td colSpan={3} className="px-4 py-3">
+                              <div className="text-[11px] tracking-brand-wide uppercase font-semibold mb-2">
+                                {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
+                              </div>
+                              {products.length === 0 ? (
+                                <p className="text-xs text-muted-foreground">Browsed without viewing a product.</p>
+                              ) : (
+                                <ul className="space-y-1">
+                                  {products.map((p) => (
+                                    <li key={p.title} className="text-xs flex flex-wrap justify-between gap-2 py-1 border-b border-border/40 last:border-0">
+                                      <span className="font-medium">{p.title}</span>
+                                      <span className="text-muted-foreground tabular-nums">
+                                        {p.views} view{p.views === 1 ? "" : "s"} · {p.adds} cart · {p.accepts} accepted
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

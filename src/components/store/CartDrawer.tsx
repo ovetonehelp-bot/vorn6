@@ -1,13 +1,31 @@
 import { useCart } from "@/context/CartContext";
 import { buildCheckoutUrl, formatPrice } from "@/lib/shopify";
-import { X, Plus, Minus, ShoppingBag } from "lucide-react";
+import { X, Plus, Minus, ShoppingBag, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 export function CartDrawer() {
   const { items, isOpen, setOpen, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
   const [showDiscountWarning, setShowDiscountWarning] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText("WELCOME20");
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
 
   const goToCheckout = () => {
+    // Only count as a real conversion / accepted offer here.
+    items.forEach((it) => {
+      trackEvent({
+        event_type: "accept_offer",
+        product_handle: it.productHandle,
+        product_title: it.productTitle,
+      });
+    });
     const url = buildCheckoutUrl(items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })));
     window.open(url, "_blank", "noopener,noreferrer");
   };
@@ -142,6 +160,22 @@ export function CartDrawer() {
 
         {items.length > 0 && (
           <footer className="border-t border-border p-6 space-y-4">
+            <div className="border border-dashed border-foreground/40 bg-muted/40 p-3 text-center">
+              <p className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">
+                Use this code at checkout
+              </p>
+              <button
+                onClick={copyCode}
+                className="mt-1.5 inline-flex items-center gap-2 font-mono font-bold text-base tracking-wider hover:opacity-70 transition-opacity"
+                aria-label="Copy discount code"
+              >
+                <span>WELCOME20</span>
+                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              </button>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                {copied ? "Copied! Paste it at checkout." : "Tap to copy"}
+              </p>
+            </div>
             <div className="flex items-baseline justify-between">
               <span className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">Subtotal</span>
               <span className="text-lg font-semibold">{formatPrice(totalPrice)}</span>

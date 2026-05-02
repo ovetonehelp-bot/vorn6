@@ -35,7 +35,7 @@ export function flyToCart(sourceEl: HTMLElement, imageUrl: string, onArrive?: ()
     z-index: 100;
     pointer-events: none;
     will-change: transform, opacity;
-    transition: transform 0.75s cubic-bezier(0.55, -0.2, 0.4, 1.1), opacity 0.75s ease-in;
+    transition: transform 0.45s cubic-bezier(0.55, -0.2, 0.4, 1.1), opacity 0.45s ease-in;
   `;
   document.body.appendChild(clone);
 
@@ -54,5 +54,5 @@ export function flyToCart(sourceEl: HTMLElement, imageUrl: string, onArrive?: ()
   };
   clone.addEventListener("transitionend", cleanup, { once: true });
   // safety timeout
-  window.setTimeout(cleanup, 1000);
+  window.setTimeout(cleanup, 700);
 }
