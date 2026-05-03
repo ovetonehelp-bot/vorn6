@@ -3,6 +3,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { StoreLayout } from "@/components/store/StoreLayout";
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import { refreshProductStatus } from "@/hooks/useProductStatus";
 
 const ADMIN_EMAIL = "ovetonehelp@gmail.com";
 
@@ -56,6 +58,9 @@ function AdminLeadsPage() {
   const [range, setRange] = useState<Range>("7d");
   const [clearing, setClearing] = useState(false);
   const [openCountry, setOpenCountry] = useState<string | null>(null);
+  const { products: shopifyProducts } = useShopifyProducts();
+  const [statusMap, setStatusMap] = useState<Record<string, boolean>>({});
+  const [savingHandle, setSavingHandle] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -79,6 +84,27 @@ function AdminLeadsPage() {
     if (!isAdmin) return;
     loadData();
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.from("product_status").select("product_handle, out_of_stock").then(({ data }) => {
+      const m: Record<string, boolean> = {};
+      (data ?? []).forEach((r: any) => { m[r.product_handle] = !!r.out_of_stock; });
+      setStatusMap(m);
+    });
+  }, [isAdmin]);
+
+  const toggleStock = async (handle: string) => {
+    const next = !statusMap[handle];
+    setSavingHandle(handle);
+    const { error } = await supabase
+      .from("product_status")
+      .upsert({ product_handle: handle, out_of_stock: next, updated_at: new Date().toISOString() });
+    setSavingHandle(null);
+    if (error) { alert("Failed: " + error.message); return; }
+    setStatusMap((m) => ({ ...m, [handle]: next }));
+    refreshProductStatus();
+  };
 
   const loadData = () => {
     setLoadingData(true);
@@ -405,6 +431,50 @@ function AdminLeadsPage() {
         </section>
 
         {/* Subscribers */}
+        <section className="mt-10">
+          <h2 className="font-display font-black text-xl tracking-tight">Inventory</h2>
+          <p className="text-[11px] text-muted-foreground mt-1">Toggle a product to mark it as sold out — the storefront badge turns red.</p>
+          <div className="mt-4 border border-border overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted text-[11px] tracking-brand-wide uppercase">
+                <tr>
+                  <th className="px-4 py-3 text-left">Product</th>
+                  <th className="px-4 py-3 text-right">Status</th>
+                  <th className="px-4 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shopifyProducts.length === 0 && (
+                  <tr><td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">Loading products…</td></tr>
+                )}
+                {shopifyProducts.map((p) => {
+                  const oos = !!statusMap[p.handle];
+                  return (
+                    <tr key={p.handle} className="border-t border-border">
+                      <td className="px-4 py-3">{p.title}</td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] tracking-brand-wide uppercase font-semibold ${oos ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${oos ? "bg-red-500" : "bg-emerald-500"}`} />
+                          {oos ? "Out of stock" : "In stock"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => toggleStock(p.handle)}
+                          disabled={savingHandle === p.handle}
+                          className="text-[11px] tracking-brand-wide uppercase border border-border px-3 py-1.5 hover:border-foreground transition-colors disabled:opacity-50"
+                        >
+                          {savingHandle === p.handle ? "…" : oos ? "Mark In Stock" : "Mark Sold Out"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section className="mt-10">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display font-black text-xl tracking-tight">Promo Subscribers</h2>
