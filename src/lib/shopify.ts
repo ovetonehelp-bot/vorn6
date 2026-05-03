@@ -8,6 +8,7 @@ export interface ShopifyVariant {
   option1: string | null;
   option2: string | null;
   option3: string | null;
+  featured_image?: { id: number; src: string } | null;
 }
 
 export interface ShopifyImage {
