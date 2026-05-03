@@ -6,6 +6,7 @@ import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/sh
 import { useCart } from "@/context/CartContext";
 import { trackEvent } from "@/lib/analytics";
 import { flyToCart } from "@/lib/flyToCart";
+import { useIsOutOfStock } from "@/hooks/useProductStatus";
 
 export const Route = createFileRoute("/products/$slug")({
   head: () => ({
@@ -21,6 +22,7 @@ function ProductPage() {
   const { slug } = Route.useParams();
   const { addItem, setOpen: setCartOpen } = useCart();
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
+  const outOfStock = useIsOutOfStock(slug);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | undefined>(undefined);
@@ -140,7 +142,11 @@ function ProductPage() {
         const vSize = getOptionValue(v, sizeOptionIndex);
         return vColor === c && (sizeOptionIndex < 0 || vSize === currentSize);
       }) ?? product.variants.find((v) => getOptionValue(v, colorOptionIndex) === c);
-    if (match) setVariantId(match.id);
+    if (match) {
+      setVariantId(match.id);
+      const img = match.featured_image?.src;
+      if (img) setActiveImage(img);
+    }
   };
 
   // Strip HTML for description and truncate
@@ -175,7 +181,7 @@ function ProductPage() {
   const displayUnitPrice = basePrice.toFixed(2);
 
   const selectBundle = (units: number, multiplier: number, sourceEl: HTMLElement | null) => {
-    if (!variant) return;
+    if (!variant || outOfStock) return;
     setSelectedBundle(units);
     // Per-unit price stored in cart so totals reflect the chosen bundle exactly.
     const perUnit = (basePrice * multiplier).toFixed(2);
