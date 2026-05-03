@@ -268,13 +268,27 @@ function ProductPage() {
             <p className="mt-2 text-lg">{formatPrice(displayUnitPrice)}</p>
 
             <div className="mt-3 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
-              </span>
-              <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-emerald-600 dark:text-emerald-400">
-                In Stock — Ships in 24 hrs
-              </span>
+              {outOfStock ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
+                  </span>
+                  <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-red-600 dark:text-red-400">
+                    Out of Stock — Sorry
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
+                  </span>
+                  <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-emerald-600 dark:text-emerald-400">
+                    In Stock — Ships in 24 hrs
+                  </span>
+                </>
+              )}
             </div>
 
             {sizes.length > 0 && (
@@ -340,12 +354,20 @@ function ProductPage() {
             )}
 
             {/* Bundle & Save section */}
-            <div className="mt-6 border-t border-border pt-5">
+            <div className="mt-6 border-t border-border pt-5 relative">
               <div className="flex items-baseline justify-between mb-3">
                 <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Choose Your Bundle</h2>
                 <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">Limited time</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 pt-3">
+              <div className={`grid grid-cols-3 gap-2 pt-3 relative ${outOfStock ? "opacity-50 pointer-events-none" : ""}`}>
+                {outOfStock && (
+                  <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                    <div className="w-full h-1 bg-red-600 shadow-[0_0_12px_rgba(239,68,68,0.9)]" />
+                    <span className="absolute bg-red-600 text-white text-[10px] tracking-brand-wide uppercase font-bold px-3 py-1 rounded-full">
+                      Out of Stock
+                    </span>
+                  </div>
+                )}
                 {bundles.map((b, i) => {
                   const total = basePrice * b.units * b.multiplier;
                   const compareTotal = basePrice * b.units;
