@@ -399,7 +399,7 @@ function ProductPage() {
                         </span>
                       )}
                       {b.badge && (
-                        <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[9px] tracking-brand-wide uppercase font-bold whitespace-nowrap ${
+                        <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 text-[8px] sm:text-[9px] tracking-brand-wide uppercase font-bold whitespace-nowrap ${
                           isBest ? "bg-emerald-500 text-white" : "bg-foreground text-background"
                         }`}>
                           {b.badge}

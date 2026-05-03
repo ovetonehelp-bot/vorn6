@@ -6,7 +6,6 @@ import { trackEvent } from "@/lib/analytics";
 
 export function CartDrawer() {
   const { items, isOpen, setOpen, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
-  const [showDiscountWarning, setShowDiscountWarning] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const copyCode = async () => {
@@ -17,7 +16,7 @@ export function CartDrawer() {
     } catch {}
   };
 
-  const goToCheckout = () => {
+  const handleCheckout = () => {
     // Only count as a real conversion / accepted offer here.
     items.forEach((it) => {
       trackEvent({
@@ -30,35 +29,6 @@ export function CartDrawer() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const handleCheckout = () => {
-    try {
-      const tried = localStorage.getItem("ovetone_discount_popup_tried_v3");
-      if (!tried) {
-        setShowDiscountWarning(true);
-        return;
-      }
-    } catch {}
-    goToCheckout();
-  };
-
-  const claimDiscount = () => {
-    setShowDiscountWarning(false);
-    setOpen(false);
-    try {
-      localStorage.removeItem("ovetone_discount_popup_minimized_v3");
-    } catch {}
-    // Trigger popup by reloading flag and dispatching event
-    window.dispatchEvent(new CustomEvent("ovetone:open-discount-popup"));
-  };
-
-  const skipDiscount = () => {
-    try {
-      localStorage.setItem("ovetone_discount_popup_tried_v3", "1");
-    } catch {}
-    setShowDiscountWarning(false);
-    goToCheckout();
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -68,32 +38,6 @@ export function CartDrawer() {
         onClick={() => setOpen(false)}
       />
       <aside className="absolute right-0 top-0 h-full w-full max-w-md bg-background shadow-2xl flex flex-col">
-        {showDiscountWarning && (
-          <div className="absolute inset-0 z-10 bg-background/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in">
-            <div className="text-center max-w-sm">
-              <h3 className="font-display font-black text-2xl md:text-3xl tracking-tight leading-tight">
-                Wait — don't pay full price.
-              </h3>
-              <p className="mt-3 text-sm text-muted-foreground">
-                You could be getting <span className="font-semibold text-foreground">20% off</span> this order. Claim your code first?
-              </p>
-              <div className="mt-6 grid gap-2.5">
-                <button
-                  onClick={claimDiscount}
-                  className="w-full bg-foreground text-background py-4 text-[12px] tracking-brand-wide uppercase font-semibold hover:opacity-80 transition-opacity"
-                >
-                  Yes — Get My 20% Off
-                </button>
-                <button
-                  onClick={skipDiscount}
-                  className="text-[11px] tracking-brand-wide uppercase text-muted-foreground hover:text-foreground underline underline-offset-4"
-                >
-                  No thanks, continue to checkout
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         <header className="flex items-center justify-between px-6 h-16 border-b border-border">
           <h2 className="text-sm tracking-brand-wide uppercase font-semibold">
             Your Cart ({totalItems})
