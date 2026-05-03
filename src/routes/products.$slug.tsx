@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
@@ -31,6 +31,13 @@ function ProductPage() {
   const [descExpanded, setDescExpanded] = useState(false);
   const [addedBundle, setAddedBundle] = useState<number | null>(null);
   const [selectedBundle, setSelectedBundle] = useState<number | null>(null);
+  const thumbsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!activeImage || !thumbsRef.current) return;
+    const el = thumbsRef.current.querySelector<HTMLElement>(`[data-img-src="${activeImage}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeImage]);
 
   useEffect(() => {
     let mounted = true;
@@ -245,10 +252,11 @@ function ProductPage() {
               )}
             </div>
             {product.images.length > 1 && (
-              <div className="mt-2 flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+              <div ref={thumbsRef} className="mt-2 flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scroll-smooth">
                 {product.images.map((img) => (
                   <button
                     key={img.id}
+                    data-img-src={img.src}
                     onClick={() => setActiveImage(img.src)}
                     className={`flex-shrink-0 w-16 md:w-20 aspect-square overflow-hidden bg-muted border snap-start transition-all hover:opacity-80 ${
                       activeImage === img.src ? "border-foreground" : "border-transparent"
