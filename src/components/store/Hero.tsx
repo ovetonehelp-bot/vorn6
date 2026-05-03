@@ -12,7 +12,7 @@ export function Hero({ image }: HeroProps = {}) {
       <img
         src={src}
         alt="Ovetone Drop 001 — Set the tone"
-        className="absolute inset-0 h-full w-full object-cover object-[center_38%] animate-slow-zoom-out"
+        className="absolute inset-0 h-full w-full object-cover object-[center_25%] animate-slow-zoom-out"
         width={1920}
         height={1080}
       />
@@ -32,23 +32,22 @@ export function Hero({ image }: HeroProps = {}) {
         </p>
         <Link
           to="/shop"
-          className="mt-7 inline-flex items-center justify-center bg-background text-foreground px-10 py-3.5 text-[11px] tracking-brand-wide uppercase font-semibold hover:bg-foreground hover:text-background border border-background transition-all duration-300 animate-fade-up"
+          className="mt-7 inline-flex items-center justify-center bg-background text-foreground px-10 py-3.5 text-[11px] tracking-brand-wide uppercase font-semibold hover:bg-foreground hover:text-background border border-background rounded-full transition-all duration-300 animate-fade-up"
           style={{ animationDelay: "0.4s" }}
         >
           Shop The Drop
         </Link>
+        <a
+          href="#drop"
+          aria-label="Scroll to drop"
+          className="mt-6 text-background/80 hover:text-background transition-colors animate-bounce-slow"
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14" />
+            <path d="m6 13 6 6 6-6" />
+          </svg>
+        </a>
       </div>
-
-      <a
-        href="#drop"
-        aria-label="Scroll to drop"
-        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-background/80 hover:text-background transition-colors animate-bounce-slow"
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14" />
-          <path d="m6 13 6 6 6-6" />
-        </svg>
-      </a>
     </section>
   );
 }
