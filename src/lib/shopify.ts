@@ -8,6 +8,7 @@ export interface ShopifyVariant {
   option1: string | null;
   option2: string | null;
   option3: string | null;
+  featured_image?: { id: number; src: string } | null;
 }
 
 export interface ShopifyImage {
@@ -46,9 +47,10 @@ export async function fetchShopifyProduct(handle: string): Promise<ShopifyProduc
  * Format: https://ovetone.com/cart/{variantId}:{qty},{variantId}:{qty}
  */
 export function buildCheckoutUrl(items: { variantId: number; quantity: number }[]): string {
-  if (items.length === 0) return `https://${SHOPIFY_DOMAIN}/cart`;
+  const base = "https://ovetone.com";
+  if (items.length === 0) return `${base}/cart`;
   const path = items.map((i) => `${i.variantId}:${i.quantity}`).join(",");
-  return `https://${SHOPIFY_DOMAIN}/cart/${path}`;
+  return `${base}/cart/${path}`;
 }
 
 export function formatPrice(price: string | number): string {

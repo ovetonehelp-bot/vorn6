@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { fetchShopifyProducts, formatPrice, type ShopifyProduct } from "@/lib/shopify";
 import { useCart } from "@/context/CartContext";
 import { trackEvent } from "@/lib/analytics";
 import { flyToCart } from "@/lib/flyToCart";
+import { useIsOutOfStock } from "@/hooks/useProductStatus";
 
 export const Route = createFileRoute("/products/$slug")({
   head: () => ({
@@ -21,6 +22,7 @@ function ProductPage() {
   const { slug } = Route.useParams();
   const { addItem, setOpen: setCartOpen } = useCart();
   const [product, setProduct] = useState<ShopifyProduct | null>(null);
+  const outOfStock = useIsOutOfStock(slug);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | undefined>(undefined);
@@ -29,6 +31,13 @@ function ProductPage() {
   const [descExpanded, setDescExpanded] = useState(false);
   const [addedBundle, setAddedBundle] = useState<number | null>(null);
   const [selectedBundle, setSelectedBundle] = useState<number | null>(null);
+  const thumbsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!activeImage || !thumbsRef.current) return;
+    const el = thumbsRef.current.querySelector<HTMLElement>(`[data-img-src="${activeImage}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeImage]);
 
   useEffect(() => {
     let mounted = true;
@@ -140,7 +149,11 @@ function ProductPage() {
         const vSize = getOptionValue(v, sizeOptionIndex);
         return vColor === c && (sizeOptionIndex < 0 || vSize === currentSize);
       }) ?? product.variants.find((v) => getOptionValue(v, colorOptionIndex) === c);
-    if (match) setVariantId(match.id);
+    if (match) {
+      setVariantId(match.id);
+      const img = match.featured_image?.src;
+      if (img) setActiveImage(img);
+    }
   };
 
   // Strip HTML for description and truncate
@@ -175,7 +188,7 @@ function ProductPage() {
   const displayUnitPrice = basePrice.toFixed(2);
 
   const selectBundle = (units: number, multiplier: number, sourceEl: HTMLElement | null) => {
-    if (!variant) return;
+    if (!variant || outOfStock) return;
     setSelectedBundle(units);
     // Per-unit price stored in cart so totals reflect the chosen bundle exactly.
     const perUnit = (basePrice * multiplier).toFixed(2);
@@ -239,10 +252,11 @@ function ProductPage() {
               )}
             </div>
             {product.images.length > 1 && (
-              <div className="mt-2 flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+              <div ref={thumbsRef} className="mt-2 flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scroll-smooth">
                 {product.images.map((img) => (
                   <button
                     key={img.id}
+                    data-img-src={img.src}
                     onClick={() => setActiveImage(img.src)}
                     className={`flex-shrink-0 w-16 md:w-20 aspect-square overflow-hidden bg-muted border snap-start transition-all hover:opacity-80 ${
                       activeImage === img.src ? "border-foreground" : "border-transparent"
@@ -262,13 +276,27 @@ function ProductPage() {
             <p className="mt-2 text-lg">{formatPrice(displayUnitPrice)}</p>
 
             <div className="mt-3 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
-              </span>
-              <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-emerald-600 dark:text-emerald-400">
-                In Stock — Ships in 24 hrs
-              </span>
+              {outOfStock ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-600 shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
+                  </span>
+                  <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-red-600 dark:text-red-400">
+                    Out of Stock — Sorry
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
+                  </span>
+                  <span className="text-[10px] tracking-brand-wide uppercase font-semibold text-emerald-600 dark:text-emerald-400">
+                    In Stock — Ships in 24 hrs
+                  </span>
+                </>
+              )}
             </div>
 
             {sizes.length > 0 && (
@@ -334,12 +362,20 @@ function ProductPage() {
             )}
 
             {/* Bundle & Save section */}
-            <div className="mt-6 border-t border-border pt-5">
+            <div className="mt-6 border-t border-border pt-5 relative">
               <div className="flex items-baseline justify-between mb-3">
                 <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Choose Your Bundle</h2>
                 <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">Limited time</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 pt-3">
+              <div className={`grid grid-cols-3 gap-2 pt-3 relative ${outOfStock ? "opacity-50 pointer-events-none" : ""}`}>
+                {outOfStock && (
+                  <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                    <div className="w-full h-1 bg-red-600 shadow-[0_0_12px_rgba(239,68,68,0.9)]" />
+                    <span className="absolute bg-red-600 text-white text-[10px] tracking-brand-wide uppercase font-bold px-3 py-1 rounded-full">
+                      Out of Stock
+                    </span>
+                  </div>
+                )}
                 {bundles.map((b, i) => {
                   const total = basePrice * b.units * b.multiplier;
                   const compareTotal = basePrice * b.units;
