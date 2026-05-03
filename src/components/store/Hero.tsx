@@ -12,7 +12,7 @@ export function Hero({ image }: HeroProps = {}) {
       <img
         src={src}
         alt="Ovetone Drop 001 — Set the tone"
-        className="absolute inset-0 h-full w-full object-cover object-[center_25%] animate-slow-zoom-out"
+        className="absolute inset-0 h-full w-full object-cover object-[center_38%] animate-slow-zoom-out"
         width={1920}
         height={1080}
       />
@@ -38,6 +38,17 @@ export function Hero({ image }: HeroProps = {}) {
           Shop The Drop
         </Link>
       </div>
+
+      <a
+        href="#drop"
+        aria-label="Scroll to drop"
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-background/80 hover:text-background transition-colors animate-bounce-slow"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14" />
+          <path d="m6 13 6 6 6-6" />
+        </svg>
+      </a>
     </section>
   );
 }
