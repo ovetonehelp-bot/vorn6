@@ -61,6 +61,7 @@ function AdminLeadsPage() {
   const { products: shopifyProducts } = useShopifyProducts();
   const [statusMap, setStatusMap] = useState<Record<string, boolean>>({});
   const [savingHandle, setSavingHandle] = useState<string | null>(null);
+  const [deletingSession, setDeletingSession] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -133,6 +134,21 @@ function AdminLeadsPage() {
     }
     setEvents([]);
     setLeads([]);
+  };
+
+  const handleDeleteSession = async (sid: string) => {
+    if (!confirm("Delete all events from this session? This cannot be undone.")) return;
+    setDeletingSession(sid);
+    const { error } = await supabase
+      .from("analytics_events")
+      .delete()
+      .eq("session_id", sid);
+    setDeletingSession(null);
+    if (error) {
+      alert("Failed: " + error.message);
+      return;
+    }
+    setEvents((evs) => evs.filter((e) => e.session_id !== sid));
   };
 
   const filtered = useMemo(() => {
