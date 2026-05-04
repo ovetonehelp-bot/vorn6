@@ -64,7 +64,7 @@ export function ExitIntentPopup() {
         interest: "exit_intent",
         code: "WELCOME20",
       });
-      subscribeToKlaviyo(email, { source: "exit_intent" }).catch(() => {});
+      subscribeToKlaviyo({ email, source: "exit_intent" }).catch(() => {});
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
