@@ -154,7 +154,9 @@ function ProductPage() {
       const img = match.featured_image?.src;
       if (img) setActiveImage(img);
       if (typeof window !== "undefined") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
       }
     }
   };
