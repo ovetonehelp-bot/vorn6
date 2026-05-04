@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
-import payments from "@/assets/payment-methods.png";
+import payments from "@/assets/payment-methods-v2.png";
 
 export function Footer() {
   return (

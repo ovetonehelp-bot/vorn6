@@ -61,6 +61,7 @@ function AdminLeadsPage() {
   const { products: shopifyProducts } = useShopifyProducts();
   const [statusMap, setStatusMap] = useState<Record<string, boolean>>({});
   const [savingHandle, setSavingHandle] = useState<string | null>(null);
+  const [deletingSession, setDeletingSession] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -133,6 +134,21 @@ function AdminLeadsPage() {
     }
     setEvents([]);
     setLeads([]);
+  };
+
+  const handleDeleteSession = async (sid: string) => {
+    if (!confirm("Delete all events from this session? This cannot be undone.")) return;
+    setDeletingSession(sid);
+    const { error } = await supabase
+      .from("analytics_events")
+      .delete()
+      .eq("session_id", sid);
+    setDeletingSession(null);
+    if (error) {
+      alert("Failed: " + error.message);
+      return;
+    }
+    setEvents((evs) => evs.filter((e) => e.session_id !== sid));
   };
 
   const filtered = useMemo(() => {
@@ -401,8 +417,17 @@ function AdminLeadsPage() {
                         return (
                           <tr key={sid} className="border-t border-border bg-muted/20">
                             <td colSpan={3} className="px-4 py-3">
-                              <div className="text-[11px] tracking-brand-wide uppercase font-semibold mb-2">
-                                {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="text-[11px] tracking-brand-wide uppercase font-semibold">
+                                  {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
+                                </div>
+                                <button
+                                  onClick={(ev) => { ev.stopPropagation(); handleDeleteSession(sid); }}
+                                  disabled={deletingSession === sid}
+                                  className="shrink-0 text-[10px] tracking-brand-wide uppercase border border-destructive text-destructive px-2 py-1 hover:bg-destructive hover:text-destructive-foreground transition-colors disabled:opacity-50"
+                                >
+                                  {deletingSession === sid ? "…" : "Delete"}
+                                </button>
                               </div>
                               {products.length === 0 ? (
                                 <p className="text-xs text-muted-foreground">Browsed without viewing a product.</p>

@@ -153,6 +153,9 @@ function ProductPage() {
       setVariantId(match.id);
       const img = match.featured_image?.src;
       if (img) setActiveImage(img);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     }
   };
 

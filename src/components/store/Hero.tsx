@@ -8,7 +8,7 @@ interface HeroProps {
 export function Hero({ image }: HeroProps = {}) {
   const src = image || hero;
   return (
-    <section className="relative h-[100svh] w-full overflow-hidden bg-foreground text-background">
+    <section className="relative h-[78svh] md:h-[100svh] w-full overflow-hidden bg-foreground text-background">
       <img
         src={src}
         alt="Ovetone Drop 001 — Set the tone"
@@ -32,7 +32,7 @@ export function Hero({ image }: HeroProps = {}) {
         </p>
         <Link
           to="/shop"
-          className="mt-7 inline-flex items-center justify-center bg-background text-foreground px-10 py-3.5 text-[11px] tracking-brand-wide uppercase font-semibold hover:bg-foreground hover:text-background border border-background rounded-full transition-all duration-300 animate-fade-up"
+          className="mt-7 inline-flex items-center justify-center bg-background text-foreground px-10 py-3.5 text-[11px] tracking-brand-wide uppercase font-semibold hover:bg-foreground hover:text-background border border-background rounded-2xl animate-cta-glow transition-colors duration-300"
           style={{ animationDelay: "0.4s" }}
         >
           Shop The Drop
