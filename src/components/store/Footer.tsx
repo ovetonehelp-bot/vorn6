@@ -38,7 +38,7 @@ export function Footer() {
           <img
             src={payments}
             alt="Accepted payment methods: Amazon, Amex, Apple Pay, Diners, Discover, Google Pay, Mastercard, PayPal, Shop Pay, Visa"
-            className="h-7 md:h-8 w-auto object-contain"
+            className="h-12 md:h-14 w-auto object-contain"
             loading="lazy"
           />
         </div>

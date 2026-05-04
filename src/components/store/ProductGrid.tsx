@@ -13,7 +13,7 @@ type Props = {
 export function ProductGrid({ title, products, viewAllHref, loading }: Props) {
   const headerRef = useReveal<HTMLDivElement>();
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
+    <section className="mx-auto max-w-7xl px-5 pt-8 pb-20 md:px-8 md:pt-12 md:pb-28">
       <div ref={headerRef} className="reveal mb-10 flex items-end justify-between border-b border-border pb-6">
         <h2 className="text-2xl md:text-4xl font-display font-bold tracking-tight">
           {title}
