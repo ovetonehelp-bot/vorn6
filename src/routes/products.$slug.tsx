@@ -235,7 +235,7 @@ function ProductPage() {
 
   return (
     <StoreLayout>
-      <section className="mx-auto max-w-7xl px-5 md:px-8 pt-4 pb-12 md:pt-6 md:pb-20 animate-fade-in">
+      <section className="mx-auto max-w-7xl w-full px-5 md:px-8 pt-4 pb-12 md:pt-6 md:pb-20 animate-fade-in overflow-hidden">
         <p className="text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-3">
           <Link to="/" className="hover:text-foreground">Home</Link>
           <span className="mx-2">/</span>
@@ -244,21 +244,24 @@ function ProductPage() {
           {product.title}
         </p>
 
-        <div className="grid md:grid-cols-2 gap-5 md:gap-10 lg:gap-14">
-          <div className="animate-fade-in" style={{ animationDelay: "0.05s", animationFillMode: "backwards" }}>
+        <div className="grid md:grid-cols-2 gap-5 md:gap-10 lg:gap-14 min-w-0">
+          <div className="animate-fade-in min-w-0" style={{ animationDelay: "0.05s", animationFillMode: "backwards" }}>
             <div className="aspect-[4/5] bg-muted overflow-hidden">
               {activeImage && (
                 <img src={activeImage} alt={product.title} width={800} height={1000} className="h-full w-full object-cover transition-transform duration-700 hover:scale-105" />
               )}
             </div>
             {product.images.length > 1 && (
-              <div ref={thumbsRef} className="mt-2 flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scroll-smooth">
+              <div
+                ref={thumbsRef}
+                className="mt-2 grid grid-flow-col auto-cols-[calc((100%-1rem)/5)] md:auto-cols-[5rem] gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth"
+              >
                 {product.images.map((img) => (
                   <button
                     key={img.id}
                     data-img-src={img.src}
                     onClick={() => setActiveImage(img.src)}
-                    className={`flex-shrink-0 w-16 md:w-20 aspect-square overflow-hidden bg-muted border snap-start transition-all hover:opacity-80 ${
+                    className={`aspect-square overflow-hidden bg-muted border snap-start transition-all hover:opacity-80 ${
                       activeImage === img.src ? "border-foreground" : "border-transparent"
                     }`}
                   >
@@ -269,7 +272,7 @@ function ProductPage() {
             )}
           </div>
 
-          <div className="md:pt-2 animate-fade-in" style={{ animationDelay: "0.15s", animationFillMode: "backwards" }}>
+          <div className="md:pt-2 animate-fade-in min-w-0" style={{ animationDelay: "0.15s", animationFillMode: "backwards" }}>
             <h1 className="font-display font-black text-2xl md:text-4xl tracking-tight">
               {product.title}
             </h1>
@@ -309,7 +312,7 @@ function ProductPage() {
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-6 gap-1.5">
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
                   {sizes.map((s) => {
                     const selected = currentSize === s;
                     return (
@@ -367,7 +370,7 @@ function ProductPage() {
                 <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold">Choose Your Bundle</h2>
                 <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">Limited time</span>
               </div>
-              <div className={`grid grid-cols-3 gap-2 pt-3 relative ${outOfStock ? "opacity-50 pointer-events-none" : ""}`}>
+              <div className={`grid grid-cols-3 gap-2 pt-3 relative overflow-hidden ${outOfStock ? "opacity-50 pointer-events-none" : ""}`}>
                 {outOfStock && (
                   <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
                     <div className="w-full h-1 bg-red-600 shadow-[0_0_12px_rgba(239,68,68,0.9)]" />
