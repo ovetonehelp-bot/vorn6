@@ -378,7 +378,7 @@ function AdminLeadsPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted text-[11px] tracking-brand-wide uppercase">
                 <tr>
-                  <th className="px-4 py-3 text-left">Country</th>
+                   <th className="px-4 py-3 text-left">Location</th>
                   <th className="px-4 py-3 text-right">Visitors</th>
                   <th className="px-4 py-3 text-right">Events</th>
                 </tr>
@@ -533,7 +533,7 @@ function AdminLeadsPage() {
                   <tr key={l.id} className="border-t border-border">
                     <td className="px-4 py-3">{l.email}</td>
                     <td className="px-4 py-3 capitalize">{l.interest}</td>
-                    <td className="px-4 py-3">{l.country ?? "—"}</td>
+                   <td className="px-4 py-3">{[l.city, l.region, l.country].filter(Boolean).join(", ") || "—"}</td>
                     <td className="px-4 py-3 font-mono text-xs">{l.code}</td>
                     <td className="px-4 py-3 text-muted-foreground">{new Date(l.created_at).toLocaleString()}</td>
                   </tr>
