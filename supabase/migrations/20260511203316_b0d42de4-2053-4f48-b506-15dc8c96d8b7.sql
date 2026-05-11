@@ -1,0 +1,2 @@
+ALTER TABLE public.analytics_events ADD COLUMN IF NOT EXISTS region text, ADD COLUMN IF NOT EXISTS city text;
+ALTER TABLE public.discount_leads ADD COLUMN IF NOT EXISTS region text, ADD COLUMN IF NOT EXISTS city text;

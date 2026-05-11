@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       analytics_events: {
         Row: {
+          city: string | null
           country: string | null
           created_at: string
           event_type: string
@@ -23,9 +24,11 @@ export type Database = {
           path: string | null
           product_handle: string | null
           product_title: string | null
+          region: string | null
           session_id: string | null
         }
         Insert: {
+          city?: string | null
           country?: string | null
           created_at?: string
           event_type: string
@@ -33,9 +36,11 @@ export type Database = {
           path?: string | null
           product_handle?: string | null
           product_title?: string | null
+          region?: string | null
           session_id?: string | null
         }
         Update: {
+          city?: string | null
           country?: string | null
           created_at?: string
           event_type?: string
@@ -43,34 +48,41 @@ export type Database = {
           path?: string | null
           product_handle?: string | null
           product_title?: string | null
+          region?: string | null
           session_id?: string | null
         }
         Relationships: []
       }
       discount_leads: {
         Row: {
+          city: string | null
           code: string
           country: string | null
           created_at: string
           email: string
           id: string
           interest: string
+          region: string | null
         }
         Insert: {
+          city?: string | null
           code?: string
           country?: string | null
           created_at?: string
           email: string
           id?: string
           interest: string
+          region?: string | null
         }
         Update: {
+          city?: string | null
           code?: string
           country?: string | null
           created_at?: string
           email?: string
           id?: string
           interest?: string
+          region?: string | null
         }
         Relationships: []
       }

@@ -19,6 +19,8 @@ interface Lead {
   interest: string;
   code: string;
   country: string | null;
+  region?: string | null;
+  city?: string | null;
   created_at: string;
 }
 
@@ -28,6 +30,8 @@ interface AnalyticsEvent {
   product_handle: string | null;
   product_title: string | null;
   country: string | null;
+  region?: string | null;
+  city?: string | null;
   path: string | null;
   session_id: string | null;
   created_at: string;
@@ -374,7 +378,7 @@ function AdminLeadsPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted text-[11px] tracking-brand-wide uppercase">
                 <tr>
-                  <th className="px-4 py-3 text-left">Country</th>
+                   <th className="px-4 py-3 text-left">Location</th>
                   <th className="px-4 py-3 text-right">Visitors</th>
                   <th className="px-4 py-3 text-right">Events</th>
                 </tr>
@@ -414,12 +418,17 @@ function AdminLeadsPage() {
                           const t = new Date(e.created_at).getTime();
                           return t > d ? t : d;
                         }, 0);
+                        const locParts = [
+                          evs.find((e) => e.city)?.city,
+                          evs.find((e) => e.region)?.region,
+                        ].filter(Boolean);
+                        const locLabel = locParts.length ? locParts.join(", ") : "Unknown area";
                         return (
                           <tr key={sid} className="border-t border-border bg-muted/20">
                             <td colSpan={3} className="px-4 py-3">
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="text-[11px] tracking-brand-wide uppercase font-semibold">
-                                  {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
+                                  {locLabel} · {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
                                 </div>
                                 <button
                                   onClick={(ev) => { ev.stopPropagation(); handleDeleteSession(sid); }}
@@ -524,7 +533,7 @@ function AdminLeadsPage() {
                   <tr key={l.id} className="border-t border-border">
                     <td className="px-4 py-3">{l.email}</td>
                     <td className="px-4 py-3 capitalize">{l.interest}</td>
-                    <td className="px-4 py-3">{l.country ?? "—"}</td>
+                   <td className="px-4 py-3">{[l.city, l.region, l.country].filter(Boolean).join(", ") || "—"}</td>
                     <td className="px-4 py-3 font-mono text-xs">{l.code}</td>
                     <td className="px-4 py-3 text-muted-foreground">{new Date(l.created_at).toLocaleString()}</td>
                   </tr>

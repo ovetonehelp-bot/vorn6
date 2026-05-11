@@ -79,19 +79,16 @@ export function DiscountPopup() {
     setBusy(true);
     setError(null);
     try {
-      // 1. Save the lead in our DB (best-effort)
+      // 1. Save the lead in our DB (best-effort) with rich geo
       let country: string | undefined;
+      let region: string | undefined;
+      let city: string | undefined;
       try {
-        const cached = localStorage.getItem("ovetone_country");
-        if (cached) country = cached;
-        else {
-          const res = await fetch("https://ipapi.co/json/");
-          const j = await res.json();
-          if (j?.country_name) {
-            country = j.country_name;
-            localStorage.setItem("ovetone_country", country!);
-          }
-        }
+        const { getVisitorGeo } = await import("@/lib/analytics");
+        const g = await getVisitorGeo();
+        country = g.country ?? undefined;
+        region = g.region ?? undefined;
+        city = g.city ?? undefined;
       } catch {}
       try {
         await supabase.from("discount_leads").insert({
@@ -99,6 +96,8 @@ export function DiscountPopup() {
           interest,
           code: "WELCOME20",
           country,
+          region,
+          city,
         });
       } catch {}
 
