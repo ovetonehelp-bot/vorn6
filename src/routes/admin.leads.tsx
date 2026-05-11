@@ -418,12 +418,17 @@ function AdminLeadsPage() {
                           const t = new Date(e.created_at).getTime();
                           return t > d ? t : d;
                         }, 0);
+                        const locParts = [
+                          evs.find((e) => e.city)?.city,
+                          evs.find((e) => e.region)?.region,
+                        ].filter(Boolean);
+                        const locLabel = locParts.length ? locParts.join(", ") : "Unknown area";
                         return (
                           <tr key={sid} className="border-t border-border bg-muted/20">
                             <td colSpan={3} className="px-4 py-3">
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="text-[11px] tracking-brand-wide uppercase font-semibold">
-                                  {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
+                                  {locLabel} · {c.country} #{idx + 1} · <span className="text-muted-foreground normal-case tracking-normal">last seen {new Date(lastSeen).toLocaleString()}</span>
                                 </div>
                                 <button
                                   onClick={(ev) => { ev.stopPropagation(); handleDeleteSession(sid); }}
