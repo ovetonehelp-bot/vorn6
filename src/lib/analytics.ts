@@ -12,24 +12,38 @@ function getSessionId(): string {
   return id;
 }
 
-let cachedCountry: string | null = null;
-async function getCountry(): Promise<string | null> {
-  if (cachedCountry) return cachedCountry;
+interface GeoInfo {
+  country: string | null;
+  region: string | null;
+  city: string | null;
+}
+
+let cachedGeo: GeoInfo | null = null;
+async function getGeo(): Promise<GeoInfo> {
+  if (cachedGeo) return cachedGeo;
+  const empty: GeoInfo = { country: null, region: null, city: null };
   try {
-    const cached = localStorage.getItem("ovetone_country");
-    if (cached) {
-      cachedCountry = cached;
-      return cached;
+    const cachedRaw = localStorage.getItem("ovetone_geo");
+    if (cachedRaw) {
+      const parsed = JSON.parse(cachedRaw) as GeoInfo;
+      cachedGeo = parsed;
+      return parsed;
     }
     const res = await fetch("https://ipapi.co/json/");
     const json = await res.json();
-    if (json?.country_name) {
-      cachedCountry = json.country_name;
-      localStorage.setItem("ovetone_country", json.country_name);
-      return cachedCountry;
-    }
+    const geo: GeoInfo = {
+      country: json?.country_name ?? null,
+      region: json?.region ?? null,
+      city: json?.city ?? null,
+    };
+    cachedGeo = geo;
+    try {
+      localStorage.setItem("ovetone_geo", JSON.stringify(geo));
+      if (geo.country) localStorage.setItem("ovetone_country", geo.country);
+    } catch {}
+    return geo;
   } catch {}
-  return null;
+  return empty;
 }
 
 interface TrackArgs {
@@ -42,14 +56,20 @@ interface TrackArgs {
 export async function trackEvent(args: TrackArgs): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    const country = await getCountry();
+    const geo = await getGeo();
     await supabase.from("analytics_events").insert({
       ...args,
-      country,
+      country: geo.country,
+      region: geo.region,
+      city: geo.city,
       session_id: getSessionId(),
       path: args.path ?? window.location.pathname,
     });
   } catch {
     // best-effort
   }
+}
+
+export async function getVisitorGeo(): Promise<GeoInfo> {
+  return getGeo();
 }
