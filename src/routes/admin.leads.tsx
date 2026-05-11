@@ -19,6 +19,8 @@ interface Lead {
   interest: string;
   code: string;
   country: string | null;
+  region?: string | null;
+  city?: string | null;
   created_at: string;
 }
 
@@ -28,6 +30,8 @@ interface AnalyticsEvent {
   product_handle: string | null;
   product_title: string | null;
   country: string | null;
+  region?: string | null;
+  city?: string | null;
   path: string | null;
   session_id: string | null;
   created_at: string;
