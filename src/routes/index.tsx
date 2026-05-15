@@ -7,6 +7,8 @@ import { Reviews } from "@/components/store/Reviews";
 import { FAQ } from "@/components/store/FAQ";
 import { Newsletter } from "@/components/store/Newsletter";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import { useSiteConfig } from "@/hooks/useSiteConfig";
+import { ComingSoon } from "@/components/store/ComingSoon";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,6 +24,16 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { products, loading } = useShopifyProducts();
+  const { config, loading: cfgLoading } = useSiteConfig();
+
+  if (cfgLoading) {
+    return <div className="min-h-screen bg-foreground" />;
+  }
+
+  if (config?.mode === "countdown") {
+    return <ComingSoon launchAt={config.launch_at} />;
+  }
+
   return (
     <StoreLayout>
       <Hero />
