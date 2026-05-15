@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/ovetone-crown.png";
+import { Link } from "@tanstack/react-router";
+import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 
 interface Props {
   launchAt: string;
@@ -22,6 +24,17 @@ export function ComingSoon({ launchAt }: Props) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const { products } = useShopifyProducts();
+  const bgImages = products.flatMap((p) => p.images.map((i) => i.src)).filter(Boolean);
+  const [bgIdx, setBgIdx] = useState(0);
+
+  useEffect(() => {
+    if (bgImages.length < 2) return;
+    const id = setInterval(() => {
+      setBgIdx((i) => (i + 1) % bgImages.length);
+    }, 10000);
+    return () => clearInterval(id);
+  }, [bgImages.length]);
 
   useEffect(() => {
     const id = setInterval(() => setT(diff(target)), 1000);
@@ -71,6 +84,17 @@ export function ComingSoon({ launchAt }: Props) {
 
   return (
     <main className="min-h-screen bg-foreground text-background flex flex-col items-center justify-center px-5 py-12 text-center relative overflow-hidden">
+      {bgImages.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out pointer-events-none"
+          style={{ opacity: i === bgIdx ? 0.35 : 0 }}
+        />
+      ))}
+      <div className="absolute inset-0 bg-foreground/60 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none" />
       <div className="relative z-10 w-full max-w-2xl flex flex-col items-center">
         <img src={logo} alt="Ovetone" className="h-20 w-20 md:h-24 md:w-24 object-contain mb-6" style={{ filter: "invert(1)" }} />
@@ -126,6 +150,13 @@ export function ComingSoon({ launchAt }: Props) {
         <p className="mt-12 text-[10px] tracking-brand-wide uppercase opacity-50">
           © Ovetone — Limited Quantities. No Restocks.
         </p>
+        <Link
+          to="/admin/leads"
+          className="mt-4 text-[10px] text-background/30 hover:text-background/70 tracking-wide"
+          aria-label="Admin"
+        >
+          ·
+        </Link>
       </div>
     </main>
   );
