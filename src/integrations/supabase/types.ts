@@ -53,6 +53,33 @@ export type Database = {
         }
         Relationships: []
       }
+      coming_soon_leads: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string
+          id: string
+          region: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          region?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          region?: string | null
+        }
+        Relationships: []
+      }
       discount_leads: {
         Row: {
           city: string | null
@@ -100,6 +127,27 @@ export type Database = {
         Update: {
           out_of_stock?: boolean
           product_handle?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_config: {
+        Row: {
+          id: string
+          launch_at: string
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          launch_at?: string
+          mode?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          launch_at?: string
+          mode?: string
           updated_at?: string
         }
         Relationships: []
