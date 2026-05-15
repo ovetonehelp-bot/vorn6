@@ -561,3 +561,86 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
     </div>
   );
 }
+
+function SiteModeControls() {
+  const [mode, setMode] = useState<"countdown" | "live">("countdown");
+  const [launchAt, setLaunchAt] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const toLocal = (iso: string) => {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("site_config").select("mode, launch_at").eq("id", "singleton").maybeSingle();
+      if (data) {
+        setMode(data.mode);
+        setLaunchAt(toLocal(data.launch_at));
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const save = async () => {
+    setSaving(true);
+    setMsg(null);
+    const iso = new Date(launchAt).toISOString();
+    const { error } = await (supabase as any)
+      .from("site_config")
+      .upsert({ id: "singleton", mode, launch_at: iso, updated_at: new Date().toISOString() });
+    setSaving(false);
+    if (error) setMsg("Failed: " + error.message);
+    else setMsg("Saved ✓");
+  };
+
+  if (loading) return null;
+
+  return (
+    <section className="mt-6 border border-border p-5">
+      <h2 className="font-display font-black text-lg tracking-tight">Site Mode</h2>
+      <p className="mt-1 text-[11px] tracking-brand-wide uppercase text-muted-foreground">
+        Switch between countdown landing and live store. Edit launch date anytime.
+      </p>
+      <div className="mt-4 flex flex-wrap items-end gap-4">
+        <div className="flex gap-2">
+          {(["countdown", "live"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`px-4 py-2 text-[11px] tracking-brand-wide uppercase border transition-colors ${
+                mode === m ? "bg-foreground text-background border-foreground" : "border-border hover:border-foreground"
+              }`}
+            >
+              {m === "countdown" ? "Countdown" : "Live Site"}
+            </button>
+          ))}
+        </div>
+        <div>
+          <label className="block text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-1">
+            Launch date & time
+          </label>
+          <input
+            type="datetime-local"
+            value={launchAt}
+            onChange={(e) => setLaunchAt(e.target.value)}
+            className="border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-foreground"
+          />
+        </div>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="bg-foreground text-background px-5 py-2 text-[11px] tracking-brand-wide uppercase font-semibold hover:opacity-80 disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+        {msg && <span className="text-[11px] text-muted-foreground">{msg}</span>}
+      </div>
+    </section>
+  );
+}
