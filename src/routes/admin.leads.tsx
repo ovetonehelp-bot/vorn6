@@ -553,6 +553,7 @@ function AdminLeadsPage() {
   );
 }
 
+
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="border border-border p-4">
