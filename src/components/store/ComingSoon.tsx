@@ -91,10 +91,10 @@ export function ComingSoon({ launchAt }: Props) {
           alt=""
           aria-hidden
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out pointer-events-none"
-          style={{ opacity: i === bgIdx ? 0.35 : 0 }}
+          style={{ opacity: i === bgIdx ? 0.55 : 0 }}
         />
       ))}
-      <div className="absolute inset-0 bg-foreground/60 pointer-events-none" />
+      <div className="absolute inset-0 bg-foreground/40 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none" />
       <div className="relative z-10 w-full max-w-2xl flex flex-col items-center">
         <img src={logo} alt="Ovetone" className="h-20 w-20 md:h-24 md:w-24 object-contain mb-6" style={{ filter: "invert(1)" }} />
