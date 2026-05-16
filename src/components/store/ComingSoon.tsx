@@ -108,8 +108,8 @@ export function ComingSoon({ launchAt }: Props) {
 
         <div className="mt-10 grid grid-cols-4 gap-2 md:gap-4 w-full max-w-md">
           {cells.map((c) => (
-            <div key={c.label} className="border border-background/20 bg-background/5 backdrop-blur-sm py-4 md:py-6">
-              <div className="font-display font-black text-2xl md:text-4xl tabular-nums">
+            <div key={c.label} className="border border-background/20 bg-background/5 backdrop-blur-sm py-4 md:py-6 animate-cell-glow">
+              <div key={c.v} className="font-display font-black text-2xl md:text-4xl tabular-nums animate-count-pop">
                 {String(c.v).padStart(2, "0")}
               </div>
               <div className="mt-1 text-[9px] md:text-[10px] tracking-brand-wide uppercase opacity-60">
