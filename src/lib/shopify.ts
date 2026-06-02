@@ -55,5 +55,14 @@ export function buildCheckoutUrl(items: { variantId: number; quantity: number }[
 
 export function formatPrice(price: string | number): string {
   const n = typeof price === "string" ? parseFloat(price) : price;
-  return `$${n.toFixed(2)}`;
+  try {
+    // Lazy import avoids circular dep at module init
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getMoneyForCountry, formatLocal } = require("@/lib/money") as typeof import("@/lib/money");
+    const country = typeof window !== "undefined" ? localStorage.getItem("ovetone_country") : null;
+    const m = getMoneyForCountry(country);
+    return formatLocal(n, m);
+  } catch {
+    return `$${n.toFixed(2)}`;
+  }
 }
