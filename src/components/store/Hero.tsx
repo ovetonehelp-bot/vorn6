@@ -1,21 +1,40 @@
 import { Link } from "@tanstack/react-router";
 import hero from "@/assets/hero-set-the-tone.png";
+import { useEffect, useState } from "react";
+import img1 from "@/assets/IMG_0496.jpg.asset.json";
+import img2 from "@/assets/IMG_0497.jpg.asset.json";
+import img3 from "@/assets/IMG_0498.jpg.asset.json";
+import img4 from "@/assets/IMG_0499.jpg.asset.json";
+import img5 from "@/assets/IMG_0500.jpg.asset.json";
+import img6 from "@/assets/IMG_0501.jpg.asset.json";
 
 interface HeroProps {
   image?: string;
 }
 
 export function Hero({ image }: HeroProps = {}) {
-  const src = image || hero;
+  const images = image
+    ? [image]
+    : [img5.url, img6.url, img1.url, img2.url, img3.url, img4.url, hero];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (images.length < 2) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % images.length), 6000);
+    return () => clearInterval(id);
+  }, [images.length]);
   return (
     <section className="relative h-[78svh] md:h-[100svh] w-full overflow-hidden bg-foreground text-background">
-      <img
-        src={src}
-        alt="Ovetone Drop 001 — Set the tone"
-        className="absolute inset-0 h-full w-full object-cover object-[center_25%] animate-slow-zoom-out"
-        width={1920}
-        height={1080}
-      />
+      {images.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt="Ovetone Drop 001 — Set the tone"
+          className="absolute inset-0 h-full w-full object-cover object-[center_25%] transition-opacity duration-[1500ms] ease-in-out"
+          style={{ opacity: i === idx ? 1 : 0 }}
+          width={1920}
+          height={1080}
+        />
+      ))}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/15 to-black/55" />
 
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-5 text-center md:px-12">
@@ -37,6 +56,17 @@ export function Hero({ image }: HeroProps = {}) {
         >
           Shop The Drop
         </Link>
+        <p className="mt-4 text-[11px] md:text-xs tracking-brand-wide uppercase text-background/85">
+          In Ghana? DM us on TikTok{" "}
+          <a
+            href="https://www.tiktok.com/@ovetone"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-4 hover:opacity-80"
+          >
+            @ovetone
+          </a>
+        </p>
         <a
           href="#drop"
           aria-label="Scroll to drop"
