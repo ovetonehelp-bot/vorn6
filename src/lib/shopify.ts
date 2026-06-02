@@ -1,3 +1,4 @@
+import { getMoneyForCountry, formatLocal } from "@/lib/money";
 const SHOPIFY_DOMAIN = "ovetone.myshopify.com";
 
 export interface ShopifyVariant {
@@ -55,14 +56,6 @@ export function buildCheckoutUrl(items: { variantId: number; quantity: number }[
 
 export function formatPrice(price: string | number): string {
   const n = typeof price === "string" ? parseFloat(price) : price;
-  try {
-    // Lazy import avoids circular dep at module init
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getMoneyForCountry, formatLocal } = require("@/lib/money") as typeof import("@/lib/money");
-    const country = typeof window !== "undefined" ? localStorage.getItem("ovetone_country") : null;
-    const m = getMoneyForCountry(country);
-    return formatLocal(n, m);
-  } catch {
-    return `$${n.toFixed(2)}`;
-  }
+  const country = typeof window !== "undefined" ? localStorage.getItem("ovetone_country") : null;
+  return formatLocal(n, getMoneyForCountry(country));
 }
