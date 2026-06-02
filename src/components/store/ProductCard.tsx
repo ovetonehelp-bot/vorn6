@@ -1,15 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import type { ShopifyProduct } from "@/lib/shopify";
-import { formatPrice } from "@/lib/shopify";
 import { useIsOutOfStock } from "@/hooks/useProductStatus";
+import { useLocalPrice } from "@/hooks/useLocalPrice";
 
 export function ProductCard({ product }: { product: ShopifyProduct }) {
   const [hover, setHover] = useState(false);
   const primary = product.images[0]?.src;
   const secondary = product.images[1]?.src ?? primary;
   const basePrice = parseFloat(product.variants[0]?.price ?? "0");
-  const displayPrice = basePrice.toFixed(2);
+  const displayPrice = useLocalPrice(basePrice);
   const outOfStock = useIsOutOfStock(product.handle);
 
   return (
@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-2">
         <h3 className="text-sm font-medium tracking-tight line-clamp-1">{product.title}</h3>
-        <p className="text-sm text-muted-foreground whitespace-nowrap">{formatPrice(displayPrice)}</p>
+        <p className="text-sm text-muted-foreground whitespace-nowrap">{displayPrice}</p>
       </div>
     </Link>
   );
