@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/ovetone-crown.png";
 import { Link } from "@tanstack/react-router";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
+import img1 from "@/assets/IMG_0496.jpg.asset.json";
+import img2 from "@/assets/IMG_0497.jpg.asset.json";
+import img3 from "@/assets/IMG_0498.jpg.asset.json";
+import img4 from "@/assets/IMG_0499.jpg.asset.json";
+import img5 from "@/assets/IMG_0500.jpg.asset.json";
+import img6 from "@/assets/IMG_0501.jpg.asset.json";
 
 interface Props {
   launchAt: string;
@@ -25,14 +31,17 @@ export function ComingSoon({ launchAt }: Props) {
   const [done, setDone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const { products } = useShopifyProducts();
-  const bgImages = products.flatMap((p) => p.images.map((i) => i.src)).filter(Boolean);
+  const brandImages = [img5.url, img6.url, img1.url, img2.url, img3.url, img4.url];
+  const productImages = products.flatMap((p) => p.images.map((i) => i.src)).filter(Boolean);
+  // Interleave brand photos first, then product photos
+  const bgImages = [...brandImages, ...productImages];
   const [bgIdx, setBgIdx] = useState(0);
 
   useEffect(() => {
     if (bgImages.length < 2) return;
     const id = setInterval(() => {
       setBgIdx((i) => (i + 1) % bgImages.length);
-    }, 10000);
+    }, 6000);
     return () => clearInterval(id);
   }, [bgImages.length]);
 
@@ -91,11 +100,10 @@ export function ComingSoon({ launchAt }: Props) {
           alt=""
           aria-hidden
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out pointer-events-none"
-          style={{ opacity: i === bgIdx ? 0.55 : 0 }}
+          style={{ opacity: i === bgIdx ? 0.9 : 0 }}
         />
       ))}
-      <div className="absolute inset-0 bg-foreground/40 pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_60%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/10 to-foreground/70 pointer-events-none" />
       <div className="relative z-10 w-full max-w-2xl flex flex-col items-center">
         <img src={logo} alt="Ovetone" className="h-20 w-20 md:h-24 md:w-24 object-contain mb-6" style={{ filter: "invert(1)" }} />
         <p className="text-[10px] md:text-xs tracking-brand-wide uppercase opacity-70">Drop 001</p>
@@ -149,6 +157,17 @@ export function ComingSoon({ launchAt }: Props) {
 
         <p className="mt-12 text-[10px] tracking-brand-wide uppercase opacity-50">
           © Ovetone — Limited Quantities. No Restocks.
+        </p>
+        <p className="mt-3 text-[11px] md:text-xs tracking-brand-wide uppercase opacity-80">
+          In Ghana? DM us on TikTok{" "}
+          <a
+            href="https://www.tiktok.com/@ovetone"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-4 hover:opacity-100"
+          >
+            @ovetone
+          </a>
         </p>
         <Link
           to="/admin/leads"

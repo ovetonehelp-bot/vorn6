@@ -1,3 +1,4 @@
+import { getMoneyForCountry, formatLocal } from "@/lib/money";
 const SHOPIFY_DOMAIN = "ovetone.myshopify.com";
 
 export interface ShopifyVariant {
@@ -55,5 +56,6 @@ export function buildCheckoutUrl(items: { variantId: number; quantity: number }[
 
 export function formatPrice(price: string | number): string {
   const n = typeof price === "string" ? parseFloat(price) : price;
-  return `$${n.toFixed(2)}`;
+  const country = typeof window !== "undefined" ? localStorage.getItem("ovetone_country") : null;
+  return formatLocal(n, getMoneyForCountry(country));
 }
