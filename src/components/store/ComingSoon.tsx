@@ -64,14 +64,26 @@ export function ComingSoon({ launchAt }: Props) {
         region = g.region ?? undefined;
         city = g.city ?? undefined;
       } catch {}
-      const { error } = await (supabase as any)
-        .from("coming_soon_leads")
-        .insert({ email, country, region, city });
-      if (error) throw error;
+      // 1. Subscribe to Klaviyo FIRST so promo list always gets the email,
+      // even if our own DB insert fails (RLS, network, etc).
       try {
         const { subscribeToKlaviyo } = await import("@/lib/klaviyo");
-        await subscribeToKlaviyo({ email, source: "coming_soon", properties: { launch_at: launchAt } });
-      } catch {}
+        await subscribeToKlaviyo({
+          email,
+          source: "coming_soon",
+          properties: { launch_at: launchAt, country, region, city },
+        });
+      } catch (e) {
+        console.warn("[coming_soon] klaviyo subscribe failed", e);
+      }
+      // 2. Also record the lead in our own table (best-effort).
+      try {
+        await (supabase as any)
+          .from("coming_soon_leads")
+          .insert({ email, country, region, city });
+      } catch (e) {
+        console.warn("[coming_soon] db insert failed", e);
+      }
       setDone(true);
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
