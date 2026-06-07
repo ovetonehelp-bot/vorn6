@@ -28,13 +28,13 @@ export function ProductGrid({ title, products, viewAllHref, loading }: Props) {
         )}
       </div>
       {loading ? (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-12 sm:grid-cols-2 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="aspect-[4/5] bg-muted animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-12 sm:grid-cols-2 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
           {products.map((p, i) => (
             <RevealItem key={p.id} index={i}>
               <ProductCard product={p} />
