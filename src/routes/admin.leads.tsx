@@ -116,8 +116,32 @@ function AdminLeadsPage() {
     Promise.all([
       supabase.from("discount_leads").select("*").order("created_at", { ascending: false }),
       supabase.from("analytics_events").select("*").order("created_at", { ascending: false }).limit(5000),
-    ]).then(([l, e]) => {
-      setLeads((l.data ?? []) as Lead[]);
+      (supabase as any).from("coming_soon_leads").select("*").order("created_at", { ascending: false }),
+    ]).then(([l, e, c]) => {
+      const discount = ((l.data ?? []) as any[]).map((r) => ({
+        id: r.id,
+        email: r.email,
+        interest: r.interest ?? "—",
+        code: r.code ?? "—",
+        country: r.country ?? null,
+        region: r.region ?? null,
+        city: r.city ?? null,
+        created_at: r.created_at,
+      })) as Lead[];
+      const coming = ((c?.data ?? []) as any[]).map((r) => ({
+        id: r.id,
+        email: r.email,
+        interest: "coming_soon",
+        code: "—",
+        country: r.country ?? null,
+        region: r.region ?? null,
+        city: r.city ?? null,
+        created_at: r.created_at,
+      })) as Lead[];
+      const merged = [...discount, ...coming].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setLeads(merged);
       setEvents((e.data ?? []) as AnalyticsEvent[]);
       setLoadingData(false);
     });
@@ -130,6 +154,7 @@ function AdminLeadsPage() {
     const [evRes, ldRes] = await Promise.all([
       supabase.from("analytics_events").delete().not("id", "is", null),
       supabase.from("discount_leads").delete().not("id", "is", null),
+      (supabase as any).from("coming_soon_leads").delete().not("id", "is", null),
     ]);
     setClearing(false);
     if (evRes.error || ldRes.error) {
