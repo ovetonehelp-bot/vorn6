@@ -29,13 +29,13 @@ function Shop() {
       </section>
       <section className="mx-auto max-w-7xl px-5 md:px-8 py-14 md:py-20">
         {loading ? (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-12 sm:grid-cols-2 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="aspect-[4/5] bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-12 sm:grid-cols-2 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
