@@ -66,6 +66,7 @@ function AdminLeadsPage() {
   const [statusMap, setStatusMap] = useState<Record<string, boolean>>({});
   const [savingHandle, setSavingHandle] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState<string | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -117,7 +118,8 @@ function AdminLeadsPage() {
       supabase.from("discount_leads").select("*").order("created_at", { ascending: false }),
       supabase.from("analytics_events").select("*").order("created_at", { ascending: false }).limit(5000),
       (supabase as any).from("coming_soon_leads").select("*").order("created_at", { ascending: false }),
-    ]).then(([l, e, c]) => {
+      (supabase as any).from("orders").select("*").order("created_at", { ascending: false }).limit(500),
+    ]).then(([l, e, c, o]) => {
       const discount = ((l.data ?? []) as any[]).map((r) => ({
         id: r.id,
         email: r.email,
@@ -143,6 +145,7 @@ function AdminLeadsPage() {
       );
       setLeads(merged);
       setEvents((e.data ?? []) as AnalyticsEvent[]);
+      setOrders((o?.data ?? []) as any[]);
       setLoadingData(false);
     });
   };
