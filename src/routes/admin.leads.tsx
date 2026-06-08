@@ -66,6 +66,7 @@ function AdminLeadsPage() {
   const [statusMap, setStatusMap] = useState<Record<string, boolean>>({});
   const [savingHandle, setSavingHandle] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState<string | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -117,7 +118,8 @@ function AdminLeadsPage() {
       supabase.from("discount_leads").select("*").order("created_at", { ascending: false }),
       supabase.from("analytics_events").select("*").order("created_at", { ascending: false }).limit(5000),
       (supabase as any).from("coming_soon_leads").select("*").order("created_at", { ascending: false }),
-    ]).then(([l, e, c]) => {
+      (supabase as any).from("orders").select("*").order("created_at", { ascending: false }).limit(500),
+    ]).then(([l, e, c, o]) => {
       const discount = ((l.data ?? []) as any[]).map((r) => ({
         id: r.id,
         email: r.email,
@@ -143,6 +145,7 @@ function AdminLeadsPage() {
       );
       setLeads(merged);
       setEvents((e.data ?? []) as AnalyticsEvent[]);
+      setOrders((o?.data ?? []) as any[]);
       setLoadingData(false);
     });
   };
@@ -366,6 +369,58 @@ function AdminLeadsPage() {
         {loadingData && <p className="mt-8 text-center text-sm text-muted-foreground">Loading data…</p>}
 
         {/* Product performance */}
+        <section className="mt-10">
+          <h2 className="font-display font-black text-xl tracking-tight">Orders ({orders.length})</h2>
+          <div className="mt-4 border border-border overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted text-[11px] tracking-brand-wide uppercase">
+                <tr>
+                  <th className="px-4 py-3 text-left">Date</th>
+                  <th className="px-4 py-3 text-left">Customer</th>
+                  <th className="px-4 py-3 text-left">Items</th>
+                  <th className="px-4 py-3 text-right">Amount</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Ref</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No orders yet.</td></tr>
+                )}
+                {orders.map((o) => (
+                  <tr key={o.id} className="border-t border-border align-top">
+                    <td className="px-4 py-3 whitespace-nowrap">{new Date(o.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{o.customer_name || "—"}</div>
+                      <div className="text-xs text-muted-foreground">{o.email}</div>
+                      {o.phone && <div className="text-xs text-muted-foreground">{o.phone}</div>}
+                      {o.shipping_address && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {o.shipping_address.address1}, {o.shipping_address.city}, {o.shipping_address.country}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      {(o.items ?? []).map((i: any, idx: number) => (
+                        <div key={idx}>{i.quantity}× {i.productTitle}{i.variantTitle && i.variantTitle !== "Default Title" ? ` (${i.variantTitle})` : ""}</div>
+                      ))}
+                    </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">{o.currency} {Number(o.amount).toFixed(2)}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-block px-2 py-0.5 text-[10px] tracking-brand-wide uppercase border ${
+                        o.status === "paid" ? "bg-emerald-50 border-emerald-300 text-emerald-700" :
+                        o.status === "failed" ? "bg-red-50 border-red-300 text-red-700" :
+                        "bg-muted border-border text-muted-foreground"
+                      }`}>{o.status}</span>
+                    </td>
+                    <td className="px-4 py-3 text-[10px] font-mono">{o.paystack_reference}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section className="mt-10">
           <h2 className="font-display font-black text-xl tracking-tight">Product Performance</h2>
           <div className="mt-4 border border-border overflow-x-auto">

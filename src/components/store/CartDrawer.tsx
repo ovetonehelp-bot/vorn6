@@ -1,12 +1,14 @@
 import { useCart } from "@/context/CartContext";
-import { buildCheckoutUrl, formatPrice } from "@/lib/shopify";
+import { formatPrice } from "@/lib/shopify";
 import { X, Plus, Minus, ShoppingBag, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { trackEvent } from "@/lib/analytics";
+import { useNavigate } from "@tanstack/react-router";
 
 export function CartDrawer() {
   const { items, isOpen, setOpen, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
 
   const copyCode = async () => {
     try {
@@ -25,8 +27,8 @@ export function CartDrawer() {
         product_title: it.productTitle,
       });
     });
-    const url = buildCheckoutUrl(items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })));
-    window.open(url, "_blank", "noopener,noreferrer");
+    setOpen(false);
+    navigate({ to: "/checkout" });
   };
 
   if (!isOpen) return null;
