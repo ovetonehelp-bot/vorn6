@@ -113,6 +113,54 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          customer_name: string | null
+          email: string
+          id: string
+          items: Json
+          paystack_reference: string
+          paystack_response: Json | null
+          phone: string | null
+          shipping_address: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          email: string
+          id?: string
+          items: Json
+          paystack_reference: string
+          paystack_response?: Json | null
+          phone?: string | null
+          shipping_address?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          email?: string
+          id?: string
+          items?: Json
+          paystack_reference?: string
+          paystack_response?: Json | null
+          phone?: string | null
+          shipping_address?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_status: {
         Row: {
           out_of_stock: boolean
