@@ -134,7 +134,7 @@ function CheckoutPage() {
               if (res.paid) {
                 setSuccess(res.reference);
                 clear();
-                setTimeout(() => navigate({ to: "/", search: undefined as never }), 200);
+                setTimeout(() => navigate({ to: "/" }), 200);
               } else {
                 setError("Payment could not be verified. If you were charged, contact support with reference " + response.reference);
               }
