@@ -124,7 +124,7 @@ export const verifyPaystackTransaction = createServerFn({ method: "POST" })
 
     await supabaseAdmin
       .from("orders")
-      .update({ status: newStatus, paystack_response: json as unknown as Record<string, unknown> })
+      .update({ status: newStatus, paystack_response: JSON.parse(JSON.stringify(json)) })
       .eq("paystack_reference", data.reference);
 
     return { paid, reference: data.reference };
