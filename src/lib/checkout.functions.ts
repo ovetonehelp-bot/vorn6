@@ -29,6 +29,9 @@ const CreateSchema = z.object({
   currency: z.enum(["USD", "GHS", "NGN", "ZAR", "KES"]).default("USD"),
 });
 
+// USD -> GHS conversion rate used to charge in Paystack (Ghana account only supports GHS).
+const USD_TO_GHS = 15.5;
+
 /** Create a pending order + Paystack transaction. Returns access_code + reference for inline popup. */
 export const createPaystackTransaction = createServerFn({ method: "POST" })
   .inputValidator((input) => CreateSchema.parse(input))
@@ -36,12 +39,14 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) throw new Error("Payment provider not configured");
 
-    // Recompute amount server-side from items to prevent tampering
-    const computed = data.items.reduce(
+    // Recompute amount server-side from items to prevent tampering.
+    // Prices are stored in USD; Paystack (Ghana) charges in GHS, so we convert.
+    const computedUsd = data.items.reduce(
       (s, i) => s + parseFloat(i.price) * i.quantity,
       0,
     );
-    const amount = Math.round(computed * 100); // minor units
+    const computedGhs = computedUsd * USD_TO_GHS;
+    const amount = Math.round(computedGhs * 100); // minor units (pesewas)
 
     const reference = `OVT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
@@ -54,7 +59,7 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
       body: JSON.stringify({
         email: data.email,
         amount,
-        currency: data.currency,
+        currency: "GHS",
         reference,
         metadata: {
           customer_name: data.customer_name,
@@ -89,8 +94,8 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
       phone: data.phone,
       shipping_address: data.shipping,
       items: data.items,
-      amount: computed,
-      currency: data.currency,
+      amount: computedGhs,
+      currency: "GHS",
       status: "pending",
     });
 
@@ -98,6 +103,7 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
       access_code: json.data.access_code,
       reference: json.data.reference,
       authorization_url: json.data.authorization_url,
+      amount_ghs: computedGhs,
     };
   });
 
