@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/shopify";
+import { useMoney } from "@/hooks/useLocalPrice";
+import { formatLocal } from "@/lib/money";
 import { createPaystackTransaction, verifyPaystackTransaction } from "@/lib/checkout.functions";
 import { Lock, ShieldCheck, Loader2 } from "lucide-react";
 
@@ -48,6 +49,8 @@ export const Route = createFileRoute("/checkout")({
 function CheckoutPage() {
   const navigate = useNavigate();
   const { items, totalPrice, clear } = useCart();
+  const money = useMoney();
+  const fmt = (usd: number) => formatLocal(usd, money);
   const createTxn = useServerFn(createPaystackTransaction);
   const verifyTxn = useServerFn(verifyPaystackTransaction);
 
@@ -113,15 +116,15 @@ function CheckoutPage() {
             quantity: i.quantity,
           })),
           amount: totalPrice,
-          currency: "USD",
+          currency: "GHS",
         },
       });
 
       const handler = window.PaystackPop.setup({
         key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
         email: form.email.trim(),
-        amount: Math.round(totalPrice * 100),
-        currency: "USD",
+        amount: Math.round(init.amount_ghs * 100),
+        currency: "GHS",
         ref: init.reference,
         accessCode: init.access_code,
         onClose: () => {
@@ -215,7 +218,7 @@ function CheckoutPage() {
                 </>
               ) : (
                 <>
-                  <Lock className="h-4 w-4" /> Pay {formatPrice(totalPrice)}
+                  <Lock className="h-4 w-4" /> Pay {fmt(totalPrice)}
                 </>
               )}
             </button>
@@ -247,16 +250,16 @@ function CheckoutPage() {
                           <p className="text-xs text-muted-foreground mt-0.5">{it.variantTitle}</p>
                         )}
                       </div>
-                      <p className="text-sm">{formatPrice(parseFloat(it.price) * it.quantity)}</p>
+                      <p className="text-sm">{fmt(parseFloat(it.price) * it.quantity)}</p>
                     </li>
                   ))}
                 </ul>
                 <div className="border-t border-border mt-4 pt-4 space-y-2 text-sm">
-                  <Row label="Subtotal" value={formatPrice(totalPrice)} />
+                  <Row label="Subtotal" value={fmt(totalPrice)} />
                   <Row label="Shipping" value="Calculated after order" muted />
                   <div className="flex items-baseline justify-between pt-3 mt-3 border-t border-border">
                     <span className="text-[11px] tracking-brand-wide uppercase">Total</span>
-                    <span className="text-xl font-semibold">{formatPrice(totalPrice)}</span>
+                    <span className="text-xl font-semibold">{fmt(totalPrice)}</span>
                   </div>
                 </div>
               </>
