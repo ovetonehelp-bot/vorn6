@@ -161,6 +161,27 @@ export type Database = {
         }
         Relationships: []
       }
+      product_backup: {
+        Row: {
+          backed_up_at: string
+          data: Json
+          handle: string
+          position: number
+        }
+        Insert: {
+          backed_up_at?: string
+          data: Json
+          handle: string
+          position?: number
+        }
+        Update: {
+          backed_up_at?: string
+          data?: Json
+          handle?: string
+          position?: number
+        }
+        Relationships: []
+      }
       product_status: {
         Row: {
           out_of_stock: boolean
