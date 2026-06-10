@@ -1,4 +1,5 @@
 import { getMoneyForCountry, formatLocal } from "@/lib/money";
+import { getBackupProducts } from "@/lib/backup.functions";
 const SHOPIFY_DOMAIN = "ovetone.myshopify.com";
 
 export interface ShopifyVariant {
@@ -32,10 +33,22 @@ export interface ShopifyProduct {
 }
 
 export async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
-  const res = await fetch(`https://${SHOPIFY_DOMAIN}/products.json?limit=50`);
-  if (!res.ok) throw new Error("Failed to fetch products");
-  const data = await res.json();
-  return data.products as ShopifyProduct[];
+  try {
+    const res = await fetch(`https://${SHOPIFY_DOMAIN}/products.json?limit=50`);
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const data = await res.json();
+    const products = data.products as ShopifyProduct[];
+    if (!products || products.length === 0) throw new Error("empty");
+    return products;
+  } catch (e) {
+    // Shopify unavailable (account closed, network, etc.) — use safe backup.
+    try {
+      const backup = await getBackupProducts();
+      return (backup.products ?? []) as ShopifyProduct[];
+    } catch {
+      throw new Error("Failed to fetch products");
+    }
+  }
 }
 
 export async function fetchShopifyProduct(handle: string): Promise<ShopifyProduct | null> {

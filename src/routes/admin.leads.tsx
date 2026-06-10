@@ -5,6 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 import { refreshProductStatus } from "@/hooks/useProductStatus";
+import { useServerFn } from "@tanstack/react-start";
+import { backupShopifyProducts, getBackupInfo } from "@/lib/backup.functions";
 
 const ADMIN_EMAIL = "ovetonehelp@gmail.com";
 
@@ -67,6 +69,11 @@ function AdminLeadsPage() {
   const [savingHandle, setSavingHandle] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const runBackup = useServerFn(backupShopifyProducts);
+  const loadBackupInfo = useServerFn(getBackupInfo);
+  const [backupInfo, setBackupInfo] = useState<{ count: number; last: string | null } | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -99,6 +106,27 @@ function AdminLeadsPage() {
       setStatusMap(m);
     });
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadBackupInfo().then(setBackupInfo).catch(() => {});
+  }, [isAdmin]);
+
+  const handleBackup = async () => {
+    if (backingUp) return;
+    setBackingUp(true);
+    setBackupMsg(null);
+    try {
+      const r = await runBackup();
+      setBackupMsg(`Saved ${r.products} products · ${r.imagesSaved} images${r.imagesSkipped ? ` (${r.imagesSkipped} skipped)` : ""}`);
+      const info = await loadBackupInfo();
+      setBackupInfo(info);
+    } catch (e: any) {
+      setBackupMsg(`Failed: ${e?.message ?? "unknown error"}`);
+    } finally {
+      setBackingUp(false);
+    }
+  };
 
   const toggleStock = async (handle: string) => {
     const next = !statusMap[handle];
@@ -546,7 +574,34 @@ function AdminLeadsPage() {
           </div>
         </section>
 
-        {/* Subscribers */}
+        {/* Backup */}
+        <section className="mt-10">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-display font-black text-xl tracking-tight">Product Safe</h2>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Stores a copy of every product (title, price, description, photos) so the storefront keeps working even if Shopify goes away.
+              </p>
+            </div>
+            <button
+              onClick={handleBackup}
+              disabled={backingUp}
+              className="text-[11px] tracking-brand-wide uppercase border border-foreground px-4 py-2 hover:bg-foreground hover:text-background transition-colors disabled:opacity-50"
+            >
+              {backingUp ? "Saving to safe…" : "Save to Safe"}
+            </button>
+          </div>
+          <div className="mt-3 text-xs text-muted-foreground">
+            {backupInfo
+              ? backupInfo.last
+                ? <>In safe: <span className="text-foreground font-medium">{backupInfo.count}</span> products · last saved {new Date(backupInfo.last).toLocaleString()}</>
+                : <>Safe is empty — click <span className="text-foreground font-medium">Save to Safe</span> to back everything up.</>
+              : "Checking safe…"}
+            {backupMsg && <div className="mt-1 text-foreground">{backupMsg}</div>}
+          </div>
+        </section>
+
+        {/* Inventory */}
         <section className="mt-10">
           <h2 className="font-display font-black text-xl tracking-tight">Inventory</h2>
           <p className="text-[11px] text-muted-foreground mt-1">Toggle a product to mark it as sold out — the storefront badge turns red.</p>
