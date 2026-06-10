@@ -1,0 +1,28 @@
+
+DROP POLICY IF EXISTS "Admins can manage product backups" ON public.product_backup;
+
+CREATE POLICY "Admins can insert product backups"
+  ON public.product_backup FOR INSERT
+  TO authenticated
+  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can update product backups"
+  ON public.product_backup FOR UPDATE
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'))
+  WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can delete product backups"
+  ON public.product_backup FOR DELETE
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can upload product-images"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'product-images' AND public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can update product-images"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'product-images' AND public.has_role(auth.uid(), 'admin'));
