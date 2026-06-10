@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as Collections001RouteImport } from './routes/collections.001'
 import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
+import { Route as ApiPublicBackupImageRouteImport } from './routes/api/public/backup-image'
 
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
@@ -58,6 +59,11 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/admin/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackupImageRoute = ApiPublicBackupImageRouteImport.update({
+  id: '/api/public/backup-image',
+  path: '/api/public/backup-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/admin/leads': typeof AdminLeadsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
+  '/api/public/backup-image': typeof ApiPublicBackupImageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/admin/leads': typeof AdminLeadsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
+  '/api/public/backup-image': typeof ApiPublicBackupImageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/admin/leads': typeof AdminLeadsRoute
   '/collections/001': typeof Collections001Route
   '/products/$slug': typeof ProductsSlugRoute
+  '/api/public/backup-image': typeof ApiPublicBackupImageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/admin/leads'
     | '/collections/001'
     | '/products/$slug'
+    | '/api/public/backup-image'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/admin/leads'
     | '/collections/001'
     | '/products/$slug'
+    | '/api/public/backup-image'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/admin/leads'
     | '/collections/001'
     | '/products/$slug'
+    | '/api/public/backup-image'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   AdminLeadsRoute: typeof AdminLeadsRoute
   Collections001Route: typeof Collections001Route
   ProductsSlugRoute: typeof ProductsSlugRoute
+  ApiPublicBackupImageRoute: typeof ApiPublicBackupImageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/backup-image': {
+      id: '/api/public/backup-image'
+      path: '/api/public/backup-image'
+      fullPath: '/api/public/backup-image'
+      preLoaderRoute: typeof ApiPublicBackupImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,7 +224,17 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLeadsRoute: AdminLeadsRoute,
   Collections001Route: Collections001Route,
   ProductsSlugRoute: ProductsSlugRoute,
+  ApiPublicBackupImageRoute: ApiPublicBackupImageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
