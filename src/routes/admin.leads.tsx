@@ -107,6 +107,27 @@ function AdminLeadsPage() {
     });
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadBackupInfo({}).then(setBackupInfo).catch(() => {});
+  }, [isAdmin]);
+
+  const handleBackup = async () => {
+    if (backingUp) return;
+    setBackingUp(true);
+    setBackupMsg(null);
+    try {
+      const r = await runBackup({ data: {} as any });
+      setBackupMsg(`Saved ${r.products} products · ${r.imagesSaved} images${r.imagesSkipped ? ` (${r.imagesSkipped} skipped)` : ""}`);
+      const info = await loadBackupInfo({});
+      setBackupInfo(info);
+    } catch (e: any) {
+      setBackupMsg(`Failed: ${e?.message ?? "unknown error"}`);
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
   const toggleStock = async (handle: string) => {
     const next = !statusMap[handle];
     setSavingHandle(handle);
