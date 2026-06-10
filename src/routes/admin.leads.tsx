@@ -109,7 +109,7 @@ function AdminLeadsPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    loadBackupInfo({}).then(setBackupInfo).catch(() => {});
+    loadBackupInfo().then(setBackupInfo).catch(() => {});
   }, [isAdmin]);
 
   const handleBackup = async () => {
@@ -117,9 +117,9 @@ function AdminLeadsPage() {
     setBackingUp(true);
     setBackupMsg(null);
     try {
-      const r = await runBackup({ data: {} as any });
+      const r = await runBackup();
       setBackupMsg(`Saved ${r.products} products · ${r.imagesSaved} images${r.imagesSkipped ? ` (${r.imagesSkipped} skipped)` : ""}`);
-      const info = await loadBackupInfo({});
+      const info = await loadBackupInfo();
       setBackupInfo(info);
     } catch (e: any) {
       setBackupMsg(`Failed: ${e?.message ?? "unknown error"}`);
