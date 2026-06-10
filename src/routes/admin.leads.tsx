@@ -574,7 +574,34 @@ function AdminLeadsPage() {
           </div>
         </section>
 
-        {/* Subscribers */}
+        {/* Backup */}
+        <section className="mt-10">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-display font-black text-xl tracking-tight">Product Safe</h2>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Stores a copy of every product (title, price, description, photos) so the storefront keeps working even if Shopify goes away.
+              </p>
+            </div>
+            <button
+              onClick={handleBackup}
+              disabled={backingUp}
+              className="text-[11px] tracking-brand-wide uppercase border border-foreground px-4 py-2 hover:bg-foreground hover:text-background transition-colors disabled:opacity-50"
+            >
+              {backingUp ? "Saving to safe…" : "Save to Safe"}
+            </button>
+          </div>
+          <div className="mt-3 text-xs text-muted-foreground">
+            {backupInfo
+              ? backupInfo.last
+                ? <>In safe: <span className="text-foreground font-medium">{backupInfo.count}</span> products · last saved {new Date(backupInfo.last).toLocaleString()}</>
+                : <>Safe is empty — click <span className="text-foreground font-medium">Save to Safe</span> to back everything up.</>
+              : "Checking safe…"}
+            {backupMsg && <div className="mt-1 text-foreground">{backupMsg}</div>}
+          </div>
+        </section>
+
+        {/* Inventory */}
         <section className="mt-10">
           <h2 className="font-display font-black text-xl tracking-tight">Inventory</h2>
           <p className="text-[11px] text-muted-foreground mt-1">Toggle a product to mark it as sold out — the storefront badge turns red.</p>
