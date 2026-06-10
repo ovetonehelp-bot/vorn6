@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const SHOPIFY_DOMAIN = "ovetone.myshopify.com";
 const BUCKET = "product-images";
@@ -21,6 +20,7 @@ function extFromContentType(ct: string | null): string {
 export const backupShopifyProducts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: roleRow } = await context.supabase
       .from("user_roles")
       .select("role")
@@ -97,6 +97,7 @@ export const backupShopifyProducts = createServerFn({ method: "POST" })
 
 /** Public — returns backup products (used as fallback if Shopify is gone). */
 export const getBackupProducts = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("product_backup")
     .select("data, position, backed_up_at")
@@ -113,6 +114,7 @@ const InfoSchema = z.object({}).optional();
 export const getBackupInfo = createServerFn({ method: "GET" })
   .inputValidator(() => InfoSchema.parse({}))
   .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { count } = await supabaseAdmin
       .from("product_backup")
       .select("handle", { count: "exact", head: true });
