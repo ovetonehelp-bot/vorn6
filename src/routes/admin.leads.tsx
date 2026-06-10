@@ -69,6 +69,11 @@ function AdminLeadsPage() {
   const [savingHandle, setSavingHandle] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const runBackup = useServerFn(backupShopifyProducts);
+  const loadBackupInfo = useServerFn(getBackupInfo);
+  const [backupInfo, setBackupInfo] = useState<{ count: number; last: string | null } | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
