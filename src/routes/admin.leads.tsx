@@ -371,6 +371,8 @@ function AdminLeadsPage() {
 
         <SiteModeControls />
 
+        <DiscountCodesPanel />
+
         <div className="mt-6 flex flex-wrap gap-2">
           {ranges.map((r) => (
             <button key={r.id} onClick={() => setRange(r.id)}
@@ -776,6 +778,203 @@ function SiteModeControls() {
           {saving ? "Saving…" : "Save"}
         </button>
         {msg && <span className="text-[11px] text-muted-foreground">{msg}</span>}
+      </div>
+    </section>
+  );
+}
+
+interface DiscountCode {
+  id: string;
+  code: string;
+  percent_off: number | null;
+  amount_off_usd: number | null;
+  active: boolean;
+  max_uses: number | null;
+  used_count: number;
+  expires_at: string | null;
+  created_at: string;
+}
+
+function DiscountCodesPanel() {
+  const [codes, setCodes] = useState<DiscountCode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [code, setCode] = useState("");
+  const [kind, setKind] = useState<"percent" | "amount">("percent");
+  const [value, setValue] = useState<string>("10");
+  const [maxUses, setMaxUses] = useState<string>("");
+  const [expires, setExpires] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await (supabase as any)
+      .from("discount_codes")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setCodes((data as DiscountCode[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMsg(null);
+    const payload: Record<string, unknown> = {
+      code: code.trim().toUpperCase(),
+      percent_off: kind === "percent" ? Math.max(1, Math.min(100, parseInt(value || "0", 10))) : null,
+      amount_off_usd: kind === "amount" ? Math.max(0.01, parseFloat(value || "0")) : null,
+      active: true,
+      max_uses: maxUses ? parseInt(maxUses, 10) : null,
+      expires_at: expires ? new Date(expires).toISOString() : null,
+    };
+    const { error } = await (supabase as any).from("discount_codes").insert(payload);
+    setSaving(false);
+    if (error) { setMsg("Failed: " + error.message); return; }
+    setCode(""); setValue(kind === "percent" ? "10" : "5"); setMaxUses(""); setExpires("");
+    setMsg("Created ✓");
+    load();
+  };
+
+  const toggle = async (c: DiscountCode) => {
+    await (supabase as any).from("discount_codes").update({ active: !c.active }).eq("id", c.id);
+    load();
+  };
+
+  const remove = async (c: DiscountCode) => {
+    if (!confirm(`Delete code ${c.code}?`)) return;
+    await (supabase as any).from("discount_codes").delete().eq("id", c.id);
+    load();
+  };
+
+  return (
+    <section className="mt-6 border border-border p-5">
+      <div className="flex items-baseline justify-between flex-wrap gap-2">
+        <h2 className="font-display font-black text-lg tracking-tight">Discount Codes</h2>
+        <span className="text-[11px] text-muted-foreground">{codes.length} total</span>
+      </div>
+      <p className="mt-1 text-[11px] tracking-brand-wide uppercase text-muted-foreground">
+        Create promo codes customers can apply at checkout.
+      </p>
+
+      <form onSubmit={create} className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-2 items-end">
+        <div className="col-span-2 md:col-span-2">
+          <label className="block text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-1">Code</label>
+          <input
+            required
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="SUMMER10"
+            className="w-full border border-border bg-background px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:border-foreground"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-1">Type</label>
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as "percent" | "amount")}
+            className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-foreground"
+          >
+            <option value="percent">% off</option>
+            <option value="amount">$ off</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-1">
+            {kind === "percent" ? "Percent" : "USD"}
+          </label>
+          <input
+            required
+            type="number"
+            min="0"
+            step={kind === "percent" ? "1" : "0.01"}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-foreground"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-1">Max uses</label>
+          <input
+            type="number"
+            min="1"
+            value={maxUses}
+            onChange={(e) => setMaxUses(e.target.value)}
+            placeholder="∞"
+            className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-foreground"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] tracking-brand-wide uppercase text-muted-foreground mb-1">Expires</label>
+          <input
+            type="date"
+            value={expires}
+            onChange={(e) => setExpires(e.target.value)}
+            className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-foreground"
+          />
+        </div>
+        <div className="col-span-2 md:col-span-6 flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-foreground text-background px-5 py-2 text-[11px] tracking-brand-wide uppercase font-semibold hover:opacity-80 disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Create code"}
+          </button>
+          {msg && <span className="text-[11px] text-muted-foreground">{msg}</span>}
+        </div>
+      </form>
+
+      <div className="mt-5 border border-border overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted text-[11px] tracking-brand-wide uppercase">
+            <tr>
+              <th className="px-3 py-2 text-left">Code</th>
+              <th className="px-3 py-2 text-left">Discount</th>
+              <th className="px-3 py-2 text-left">Used</th>
+              <th className="px-3 py-2 text-left">Expires</th>
+              <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && (
+              <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Loading…</td></tr>
+            )}
+            {!loading && codes.length === 0 && (
+              <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">No codes yet.</td></tr>
+            )}
+            {codes.map((c) => (
+              <tr key={c.id} className="border-t border-border">
+                <td className="px-3 py-2 font-mono">{c.code}</td>
+                <td className="px-3 py-2">
+                  {c.percent_off ? `${c.percent_off}%` : c.amount_off_usd ? `$${Number(c.amount_off_usd).toFixed(2)}` : "—"}
+                </td>
+                <td className="px-3 py-2">{c.used_count}{c.max_uses ? ` / ${c.max_uses}` : ""}</td>
+                <td className="px-3 py-2 text-xs text-muted-foreground">
+                  {c.expires_at ? new Date(c.expires_at).toLocaleDateString() : "—"}
+                </td>
+                <td className="px-3 py-2">
+                  <span className={`inline-block px-2 py-0.5 text-[10px] tracking-brand-wide uppercase border ${
+                    c.active ? "bg-emerald-50 border-emerald-300 text-emerald-700" : "bg-muted border-border text-muted-foreground"
+                  }`}>
+                    {c.active ? "Active" : "Off"}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <button onClick={() => toggle(c)} className="text-[10px] tracking-brand-wide uppercase underline underline-offset-4 mr-3">
+                    {c.active ? "Disable" : "Enable"}
+                  </button>
+                  <button onClick={() => remove(c)} className="text-[10px] tracking-brand-wide uppercase text-destructive underline underline-offset-4">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
