@@ -371,6 +371,8 @@ function AdminLeadsPage() {
 
         <SiteModeControls />
 
+        <DiscountCodesPanel />
+
         <div className="mt-6 flex flex-wrap gap-2">
           {ranges.map((r) => (
             <button key={r.id} onClick={() => setRange(r.id)}
