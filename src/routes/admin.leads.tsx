@@ -701,6 +701,11 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 }
 
 function SiteModeControls() {
+  // panel is defined below
+  return SiteModeControlsImpl();
+}
+
+function SiteModeControlsImpl() {
   const [mode, setMode] = useState<"countdown" | "live">("countdown");
   const [launchAt, setLaunchAt] = useState<string>("");
   const [loading, setLoading] = useState(true);
