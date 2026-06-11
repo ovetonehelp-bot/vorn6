@@ -6,7 +6,7 @@ const TABLE: Record<string, Money> = {
   GB: { symbol: "£", code: "GBP", rate: 0.79 },
   AU: { symbol: "A$", code: "AUD", rate: 1.52 },
   NZ: { symbol: "NZ$", code: "NZD", rate: 1.65 },
-  GH: { symbol: "GH₵", code: "GHS", rate: 15.5 },
+  GH: { symbol: "GH₵", code: "GHS", rate: 11.14 },
   NG: { symbol: "₦", code: "NGN", rate: 1600 },
   KE: { symbol: "KSh", code: "KES", rate: 130 },
   ZA: { symbol: "R", code: "ZAR", rate: 18.5 },

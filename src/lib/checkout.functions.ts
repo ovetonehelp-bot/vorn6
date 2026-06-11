@@ -30,7 +30,7 @@ const CreateSchema = z.object({
 });
 
 // USD -> GHS conversion rate used to charge in Paystack (Ghana account only supports GHS).
-const USD_TO_GHS = 15.5;
+const USD_TO_GHS = 11.14;
 
 /** Create a pending order + Paystack transaction. Returns access_code + reference for inline popup. */
 export const createPaystackTransaction = createServerFn({ method: "POST" })
