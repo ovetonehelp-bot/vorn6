@@ -80,6 +80,45 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_codes: {
+        Row: {
+          active: boolean
+          amount_off_usd: number | null
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          percent_off: number | null
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          amount_off_usd?: number | null
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          percent_off?: number | null
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          amount_off_usd?: number | null
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          percent_off?: number | null
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
       discount_leads: {
         Row: {
           city: string | null
@@ -119,6 +158,8 @@ export type Database = {
           created_at: string
           currency: string
           customer_name: string | null
+          discount_amount_usd: number | null
+          discount_code: string | null
           email: string
           id: string
           items: Json
@@ -134,6 +175,8 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_name?: string | null
+          discount_amount_usd?: number | null
+          discount_code?: string | null
           email: string
           id?: string
           items: Json
@@ -149,6 +192,8 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_name?: string | null
+          discount_amount_usd?: number | null
+          discount_code?: string | null
           email?: string
           id?: string
           items?: Json
