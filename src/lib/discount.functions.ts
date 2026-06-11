@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const Schema = z.object({
   code: z.string().min(1).max(64),
@@ -19,6 +18,7 @@ export type DiscountResult = {
 export const validateDiscountCode = createServerFn({ method: "POST" })
   .inputValidator((input) => Schema.parse(input))
   .handler(async ({ data }): Promise<DiscountResult> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const code = data.code.trim().toUpperCase();
     const { data: row, error } = await supabaseAdmin
       .from("discount_codes")
