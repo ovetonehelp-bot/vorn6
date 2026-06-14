@@ -5,6 +5,7 @@ import { StoreLayout } from "@/components/store/StoreLayout";
 import { useCart } from "@/context/CartContext";
 import { useMoney } from "@/hooks/useLocalPrice";
 import { formatLocal } from "@/lib/money";
+import { getMoneyForCountry } from "@/lib/money";
 import { createPaystackTransaction, verifyPaystackTransaction } from "@/lib/checkout.functions";
 import { validateDiscountCode } from "@/lib/discount.functions";
 import { Lock, ShieldCheck, Loader2, Tag, Check, Truck, Mail, MapPin } from "lucide-react";
@@ -52,6 +53,8 @@ function CheckoutPage() {
   const { items, totalPrice, clear } = useCart();
   const money = useMoney();
   const fmt = (usd: number) => formatLocal(usd, money);
+  const ghs = getMoneyForCountry("Ghana");
+  const fmtGhsExact = (usd: number) => `GH₵${(usd * ghs.rate).toFixed(2)}`;
   const createTxn = useServerFn(createPaystackTransaction);
   const verifyTxn = useServerFn(verifyPaystackTransaction);
   const checkCode = useServerFn(validateDiscountCode);
@@ -345,7 +348,10 @@ function CheckoutPage() {
                     <Row label="Shipping" value="Calculated after order" muted />
                     <div className="flex items-baseline justify-between pt-3 mt-3 border-t border-border">
                       <span className="text-[11px] tracking-brand-wide uppercase">Total</span>
-                      <span className="text-2xl font-semibold tracking-tight">{fmt(discountedTotal)}</span>
+                      <div className="text-right">
+                        <span className="block text-2xl font-semibold tracking-tight">{fmt(discountedTotal)}</span>
+                        <span className="mt-1 block text-xs text-muted-foreground">Charged as {fmtGhsExact(discountedTotal)} GHS</span>
+                      </div>
                     </div>
                   </div>
                 </>
