@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { StoreLayout } from "@/components/store/StoreLayout";
 import { useCart } from "@/context/CartContext";
 import { useMoney } from "@/hooks/useLocalPrice";
-import { formatLocal, getMoneyForCountry } from "@/lib/money";
+import { formatLocal } from "@/lib/money";
 import { createPaystackTransaction, verifyPaystackTransaction } from "@/lib/checkout.functions";
 import { validateDiscountCode } from "@/lib/discount.functions";
 import { Lock, ShieldCheck, Loader2, Tag, Check, Truck, Mail, MapPin } from "lucide-react";
@@ -52,8 +52,6 @@ function CheckoutPage() {
   const { items, totalPrice, clear } = useCart();
   const money = useMoney();
   const fmt = (usd: number) => formatLocal(usd, money);
-  const ghs = getMoneyForCountry("Ghana");
-  const fmtGhsExact = (usd: number) => `GH₵${(usd * ghs.rate).toFixed(2)}`;
   const createTxn = useServerFn(createPaystackTransaction);
   const verifyTxn = useServerFn(verifyPaystackTransaction);
   const checkCode = useServerFn(validateDiscountCode);
@@ -65,11 +63,7 @@ function CheckoutPage() {
   const [codeInput, setCodeInput] = useState("");
   const [codeBusy, setCodeBusy] = useState(false);
   const [codeError, setCodeError] = useState<string | null>(null);
-  const [applied, setApplied] = useState<{
-    code: string;
-    discount_usd: number;
-    message: string;
-  } | null>(null);
+  const [applied, setApplied] = useState<{ code: string; discount_usd: number; message: string } | null>(null);
 
   const [form, setForm] = useState({
     email: "",
@@ -177,10 +171,7 @@ function CheckoutPage() {
                 clear();
                 setTimeout(() => navigate({ to: "/" }), 200);
               } else {
-                setError(
-                  "Payment could not be verified. If you were charged, contact support with reference " +
-                    response.reference,
-                );
+                setError("Payment could not be verified. If you were charged, contact support with reference " + response.reference);
               }
             })
             .catch(() => {
@@ -218,9 +209,7 @@ function CheckoutPage() {
       <div className="bg-gradient-to-b from-muted/20 to-background min-h-screen">
         <div className="max-w-6xl mx-auto px-5 sm:px-6 py-10 lg:py-16">
           <div className="mb-8 lg:mb-12 text-center lg:text-left">
-            <p className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">
-              Ovetone
-            </p>
+            <p className="text-[11px] tracking-brand-wide uppercase text-muted-foreground">Ovetone</p>
             <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mt-2">Checkout</h1>
             <p className="mt-2 text-sm text-muted-foreground flex items-center justify-center lg:justify-start gap-2">
               <Lock className="h-3.5 w-3.5" /> Encrypted &amp; secured by Paystack
@@ -231,48 +220,17 @@ function CheckoutPage() {
             {/* Form */}
             <form onSubmit={handlePay} className="space-y-6">
               <Section title="Contact" icon={<Mail className="h-3.5 w-3.5" />}>
-                <Field
-                  label="Email"
-                  value={form.email}
-                  onChange={update("email")}
-                  type="email"
-                  required
-                />
-                <Field
-                  label="Phone"
-                  value={form.phone}
-                  onChange={update("phone")}
-                  type="tel"
-                  required
-                />
+                <Field label="Email" value={form.email} onChange={update("email")} type="email" required />
+                <Field label="Phone" value={form.phone} onChange={update("phone")} type="tel" required />
               </Section>
 
               <Section title="Shipping address" icon={<MapPin className="h-3.5 w-3.5" />}>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field
-                    label="First name"
-                    value={form.firstName}
-                    onChange={update("firstName")}
-                    required
-                  />
-                  <Field
-                    label="Last name"
-                    value={form.lastName}
-                    onChange={update("lastName")}
-                    required
-                  />
+                  <Field label="First name" value={form.firstName} onChange={update("firstName")} required />
+                  <Field label="Last name" value={form.lastName} onChange={update("lastName")} required />
                 </div>
-                <Field
-                  label="Address"
-                  value={form.address1}
-                  onChange={update("address1")}
-                  required
-                />
-                <Field
-                  label="Apartment, suite (optional)"
-                  value={form.address2}
-                  onChange={update("address2")}
-                />
+                <Field label="Address" value={form.address1} onChange={update("address1")} required />
+                <Field label="Apartment, suite (optional)" value={form.address2} onChange={update("address2")} />
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="City" value={form.city} onChange={update("city")} required />
                   <Field label="State / Region" value={form.state} onChange={update("state")} />
@@ -281,9 +239,7 @@ function CheckoutPage() {
               </Section>
 
               {error && (
-                <p className="text-sm text-red-600 border border-red-200 bg-red-50 rounded-md px-4 py-3">
-                  {error}
-                </p>
+                <p className="text-sm text-red-600 border border-red-200 bg-red-50 rounded-md px-4 py-3">{error}</p>
               )}
 
               <button
@@ -303,12 +259,8 @@ function CheckoutPage() {
               </button>
 
               <div className="flex items-center justify-center gap-6 text-[11px] tracking-brand-wide uppercase text-muted-foreground pt-2">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5" /> 256-bit SSL
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Truck className="h-3.5 w-3.5" /> Worldwide shipping
-                </span>
+                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> 256-bit SSL</span>
+                <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> Worldwide shipping</span>
               </div>
             </form>
 
@@ -316,9 +268,7 @@ function CheckoutPage() {
             <aside className="lg:sticky lg:top-24 self-start bg-card border border-border rounded-lg p-6 shadow-sm">
               <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold mb-6 flex items-center gap-2">
                 <span>Your order</span>
-                <span className="ml-auto text-muted-foreground">
-                  {items.length} item{items.length === 1 ? "" : "s"}
-                </span>
+                <span className="ml-auto text-muted-foreground">{items.length} item{items.length === 1 ? "" : "s"}</span>
               </h2>
               {items.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Your cart is empty.</p>
@@ -328,11 +278,7 @@ function CheckoutPage() {
                     {items.map((it) => (
                       <li key={it.variantId} className="flex gap-4 py-4 first:pt-0">
                         <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden bg-background rounded-md border border-border">
-                          <img
-                            src={it.image}
-                            alt={it.productTitle}
-                            className="h-full w-full object-cover"
-                          />
+                          <img src={it.image} alt={it.productTitle} className="h-full w-full object-cover" />
                           <span className="absolute -top-2 -right-2 bg-foreground text-background text-[10px] h-5 min-w-5 px-1.5 inline-flex items-center justify-center rounded-full shadow">
                             {it.quantity}
                           </span>
@@ -340,14 +286,10 @@ function CheckoutPage() {
                         <div className="flex-1 text-sm">
                           <p className="font-medium leading-tight">{it.productTitle}</p>
                           {it.variantTitle && it.variantTitle !== "Default Title" && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {it.variantTitle}
-                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{it.variantTitle}</p>
                           )}
                         </div>
-                        <p className="text-sm font-medium">
-                          {fmt(parseFloat(it.price) * it.quantity)}
-                        </p>
+                        <p className="text-sm font-medium">{fmt(parseFloat(it.price) * it.quantity)}</p>
                       </li>
                     ))}
                   </ul>
@@ -363,10 +305,7 @@ function CheckoutPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => {
-                            setApplied(null);
-                            setCodeInput("");
-                          }}
+                          onClick={() => { setApplied(null); setCodeInput(""); }}
                           className="text-[10px] tracking-brand-wide uppercase text-emerald-700 hover:underline"
                         >
                           Remove
@@ -401,23 +340,12 @@ function CheckoutPage() {
                   <div className="border-t border-border mt-4 pt-4 space-y-2 text-sm">
                     <Row label="Subtotal" value={fmt(totalPrice)} />
                     {applied && applied.discount_usd > 0 && (
-                      <Row
-                        label={`Discount (${applied.code})`}
-                        value={`− ${fmt(applied.discount_usd)}`}
-                        highlight
-                      />
+                      <Row label={`Discount (${applied.code})`} value={`− ${fmt(applied.discount_usd)}`} highlight />
                     )}
                     <Row label="Shipping" value="Calculated after order" muted />
                     <div className="flex items-baseline justify-between pt-3 mt-3 border-t border-border">
                       <span className="text-[11px] tracking-brand-wide uppercase">Total</span>
-                      <div className="text-right">
-                        <span className="block text-2xl font-semibold tracking-tight">
-                          {fmt(discountedTotal)}
-                        </span>
-                        <span className="mt-1 block text-xs text-muted-foreground">
-                          Charged as {fmtGhsExact(discountedTotal)} GHS
-                        </span>
-                      </div>
+                      <span className="text-2xl font-semibold tracking-tight">{fmt(discountedTotal)}</span>
                     </div>
                   </div>
                 </>
@@ -430,20 +358,11 @@ function CheckoutPage() {
   );
 }
 
-function Section({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="bg-card border border-border rounded-lg p-5 sm:p-6 shadow-sm">
       <h2 className="text-[11px] tracking-brand-wide uppercase font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <span>{title}</span>
+        {icon}<span>{title}</span>
       </h2>
       <div className="space-y-4">{children}</div>
     </div>
@@ -456,9 +375,7 @@ function Field({
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
-      <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">
-        {label}
-      </span>
+      <span className="text-[10px] tracking-brand-wide uppercase text-muted-foreground">{label}</span>
       <input
         {...rest}
         className="mt-1 w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-foreground focus:ring-2 focus:ring-foreground/10 transition"
@@ -467,27 +384,11 @@ function Field({
   );
 }
 
-function Row({
-  label,
-  value,
-  muted,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  muted?: boolean;
-  highlight?: boolean;
-}) {
+function Row({ label, value, muted, highlight }: { label: string; value: string; muted?: boolean; highlight?: boolean }) {
   return (
     <div className="flex items-baseline justify-between">
       <span className={highlight ? "text-emerald-700" : "text-muted-foreground"}>{label}</span>
-      <span
-        className={
-          highlight ? "text-emerald-700 font-medium" : muted ? "text-muted-foreground text-xs" : ""
-        }
-      >
-        {value}
-      </span>
+      <span className={highlight ? "text-emerald-700 font-medium" : muted ? "text-muted-foreground text-xs" : ""}>{value}</span>
     </div>
   );
 }

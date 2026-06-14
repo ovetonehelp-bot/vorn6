@@ -38,12 +38,6 @@ export const backupShopifyProducts = createServerFn({ method: "POST" })
 
     for (let p = 0; p < products.length; p++) {
       const prod = products[p];
-      const { data: existing } = await supabaseAdmin
-        .from("product_backup")
-        .select("source")
-        .eq("handle", prod.handle)
-        .maybeSingle();
-      if (existing?.source === "admin") continue;
       const newImages: any[] = [];
       for (const img of prod.images ?? []) {
         const filename = `${img.id}.${extFromContentType(null)}`;
@@ -106,16 +100,11 @@ export const getBackupProducts = createServerFn({ method: "GET" }).handler(async
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("product_backup")
-    .select("handle, data, position, backed_up_at, source, is_published")
+    .select("data, position, backed_up_at")
     .order("position", { ascending: true });
   if (error) throw error;
   return {
-    products: (data ?? [])
-      .filter((r: any) => r.is_published)
-      .map((r: any) => ({ ...r.data, _source: r.source })),
-    hidden_handles: (data ?? [])
-      .filter((r: any) => !r.is_published && r.source === "admin")
-      .map((r: any) => r.handle),
+    products: (data ?? []).map((r: any) => r.data),
     backed_up_at: data?.[0]?.backed_up_at ?? null,
     count: data?.length ?? 0,
   };

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const ItemSchema = z.object({
   variantId: z.number(),
@@ -36,45 +37,15 @@ const USD_TO_GHS = 11.14;
 export const createPaystackTransaction = createServerFn({ method: "POST" })
   .inputValidator((input) => CreateSchema.parse(input))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) throw new Error("Payment provider not configured");
 
     // Recompute amount server-side from items to prevent tampering.
     // Prices are stored in USD; Paystack (Ghana) charges in GHS, so we convert.
-    const { data: productRows } = await supabaseAdmin
-      .from("product_backup")
-      .select("handle, data")
-      .in(
-        "handle",
-        data.items.map((item) => item.productHandle),
-      )
-      .eq("is_published", true);
-    const catalog = new Map((productRows ?? []).map((row: any) => [row.handle, row.data]));
-    const missingHandles = data.items
-      .map((item) => item.productHandle)
-      .filter((handle) => !catalog.has(handle));
-    if (missingHandles.length) {
-      const liveResponse = await fetch("https://ovetone.myshopify.com/products.json?limit=250");
-      if (liveResponse.ok) {
-        const liveData = (await liveResponse.json()) as { products?: any[] };
-        for (const product of liveData.products ?? []) catalog.set(product.handle, product);
-      }
-    }
-    const computedUsd = data.items.reduce((sum, item) => {
-      const product = catalog.get(item.productHandle) as any;
-      const variant = product?.variants?.find(
-        (candidate: any) => Number(candidate.id) === item.variantId,
-      );
-      const basePrice = Number(variant?.price);
-      const submittedPrice = Number(item.price);
-      const allowedPrices = [basePrice, basePrice * 0.9, basePrice * 0.8];
-      const unitPrice = allowedPrices.find((price) => Math.abs(price - submittedPrice) < 0.011);
-      if (!Number.isFinite(basePrice) || basePrice <= 0 || unitPrice == null) {
-        throw new Error(`Price unavailable for ${item.productTitle}. Please refresh your cart.`);
-      }
-      return sum + unitPrice * item.quantity;
-    }, 0);
+    const computedUsd = data.items.reduce(
+      (s, i) => s + parseFloat(i.price) * i.quantity,
+      0,
+    );
 
     // Apply discount code (server-validated) if provided.
     let discountUsd = 0;
@@ -186,7 +157,6 @@ const VerifySchema = z.object({ reference: z.string().min(3).max(200) });
 export const verifyPaystackTransaction = createServerFn({ method: "POST" })
   .inputValidator((input) => VerifySchema.parse(input))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) throw new Error("Payment provider not configured");
 
