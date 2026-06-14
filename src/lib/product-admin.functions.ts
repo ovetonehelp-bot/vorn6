@@ -166,7 +166,7 @@ export const setAdminProductPublished = createServerFn({ method: "POST" })
       if (!product) throw new Error("Product not found.");
       const { error } = await supabaseAdmin.from("product_backup").insert({
         handle: data.handle,
-        data: product,
+        data: JSON.parse(JSON.stringify(product)),
         position: (payload.products ?? []).findIndex((item) => item.handle === data.handle),
         backed_up_at: new Date().toISOString(),
         is_published: data.published,
