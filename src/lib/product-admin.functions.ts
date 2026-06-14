@@ -153,6 +153,28 @@ export const setAdminProductPublished = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing } = await supabaseAdmin
+      .from("product_backup")
+      .select("handle")
+      .eq("handle", data.handle)
+      .maybeSingle();
+    if (!existing) {
+      const response = await fetch("https://ovetone.myshopify.com/products.json?limit=250");
+      if (!response.ok) throw new Error("Could not load this product.");
+      const payload = (await response.json()) as { products?: Array<Record<string, unknown>> };
+      const product = (payload.products ?? []).find((item) => item.handle === data.handle);
+      if (!product) throw new Error("Product not found.");
+      const { error } = await supabaseAdmin.from("product_backup").insert({
+        handle: data.handle,
+        data: product,
+        position: (payload.products ?? []).findIndex((item) => item.handle === data.handle),
+        backed_up_at: new Date().toISOString(),
+        is_published: data.published,
+        source: "admin",
+      });
+      if (error) throw error;
+      return { ok: true };
+    }
     const { error } = await supabaseAdmin
       .from("product_backup")
       .update({ is_published: data.published, source: "admin" })
