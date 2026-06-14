@@ -48,6 +48,16 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
       .in("handle", data.items.map((item) => item.productHandle))
       .eq("is_published", true);
     const catalog = new Map((productRows ?? []).map((row: any) => [row.handle, row.data]));
+    const missingHandles = data.items
+      .map((item) => item.productHandle)
+      .filter((handle) => !catalog.has(handle));
+    if (missingHandles.length) {
+      const liveResponse = await fetch("https://ovetone.myshopify.com/products.json?limit=250");
+      if (liveResponse.ok) {
+        const liveData = (await liveResponse.json()) as { products?: any[] };
+        for (const product of liveData.products ?? []) catalog.set(product.handle, product);
+      }
+    }
     const computedUsd = data.items.reduce((sum, item) => {
       const product = catalog.get(item.productHandle) as any;
       const variant = product?.variants?.find((candidate: any) => Number(candidate.id) === item.variantId);
@@ -168,6 +178,7 @@ const VerifySchema = z.object({ reference: z.string().min(3).max(200) });
 export const verifyPaystackTransaction = createServerFn({ method: "POST" })
   .inputValidator((input) => VerifySchema.parse(input))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const secret = process.env.PAYSTACK_SECRET_KEY;
     if (!secret) throw new Error("Payment provider not configured");
 
