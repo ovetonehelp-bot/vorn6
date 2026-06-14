@@ -100,11 +100,12 @@ export const getBackupProducts = createServerFn({ method: "GET" }).handler(async
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("product_backup")
-    .select("data, position, backed_up_at")
+    .select("data, position, backed_up_at, source")
+    .eq("is_published", true)
     .order("position", { ascending: true });
   if (error) throw error;
   return {
-    products: (data ?? []).map((r: any) => r.data),
+    products: (data ?? []).map((r: any) => ({ ...r.data, _source: r.source })),
     backed_up_at: data?.[0]?.backed_up_at ?? null,
     count: data?.length ?? 0,
   };

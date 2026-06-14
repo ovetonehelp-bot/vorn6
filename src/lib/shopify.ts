@@ -30,16 +30,22 @@ export interface ShopifyProduct {
   images: ShopifyImage[];
   options: { name: string; values: string[] }[];
   variants: ShopifyVariant[];
+  _source?: "shopify" | "admin";
 }
 
 export async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
   try {
-    const res = await fetch(`https://${SHOPIFY_DOMAIN}/products.json?limit=50`);
+    const [res, backup] = await Promise.all([
+      fetch(`https://${SHOPIFY_DOMAIN}/products.json?limit=50`),
+      getBackupProducts().catch(() => ({ products: [] })),
+    ]);
     if (!res.ok) throw new Error(`status ${res.status}`);
     const data = await res.json();
     const products = data.products as ShopifyProduct[];
     if (!products || products.length === 0) throw new Error("empty");
-    return products;
+    const managed = (backup.products ?? []).filter((p: any) => p._source === "admin") as ShopifyProduct[];
+    const managedHandles = new Set(managed.map((p) => p.handle));
+    return [...products.filter((p) => !managedHandles.has(p.handle)), ...managed];
   } catch (e) {
     // Shopify unavailable (account closed, network, etc.) — use safe backup.
     try {
