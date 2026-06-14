@@ -31,12 +31,30 @@ export const getAdminProducts = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await requireAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data: saved, error } = await supabaseAdmin
       .from("product_backup")
       .select("handle, data, position, is_published, source, updated_at")
       .order("position", { ascending: true });
     if (error) throw error;
-    return { products: data ?? [] };
+    const savedRows = saved ?? [];
+    try {
+      const response = await fetch("https://ovetone.myshopify.com/products.json?limit=250");
+      if (!response.ok) return { products: savedRows };
+      const payload = (await response.json()) as { products?: any[] };
+      const savedByHandle = new Map(savedRows.map((row) => [row.handle, row]));
+      const liveRows = (payload.products ?? []).map((product, position) => savedByHandle.get(product.handle) ?? ({
+        handle: product.handle,
+        data: product,
+        position,
+        is_published: true,
+        source: "shopify",
+        updated_at: product.updated_at ?? product.created_at,
+      }));
+      const liveHandles = new Set(liveRows.map((row) => row.handle));
+      return { products: [...liveRows, ...savedRows.filter((row) => !liveHandles.has(row.handle))] };
+    } catch {
+      return { products: savedRows };
+    }
   });
 
 export const saveAdminProduct = createServerFn({ method: "POST" })

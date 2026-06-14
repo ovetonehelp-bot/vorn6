@@ -38,6 +38,12 @@ export const backupShopifyProducts = createServerFn({ method: "POST" })
 
     for (let p = 0; p < products.length; p++) {
       const prod = products[p];
+      const { data: existing } = await supabaseAdmin
+        .from("product_backup")
+        .select("source")
+        .eq("handle", prod.handle)
+        .maybeSingle();
+      if (existing?.source === "admin") continue;
       const newImages: any[] = [];
       for (const img of prod.images ?? []) {
         const filename = `${img.id}.${extFromContentType(null)}`;
