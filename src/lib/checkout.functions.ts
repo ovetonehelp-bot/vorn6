@@ -61,8 +61,11 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
     const computedUsd = data.items.reduce((sum, item) => {
       const product = catalog.get(item.productHandle) as any;
       const variant = product?.variants?.find((candidate: any) => Number(candidate.id) === item.variantId);
-      const unitPrice = Number(variant?.price);
-      if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+      const basePrice = Number(variant?.price);
+      const submittedPrice = Number(item.price);
+      const allowedPrices = [basePrice, basePrice * 0.9, basePrice * 0.8];
+      const unitPrice = allowedPrices.find((price) => Math.abs(price - submittedPrice) < 0.011);
+      if (!Number.isFinite(basePrice) || basePrice <= 0 || unitPrice == null) {
         throw new Error(`Price unavailable for ${item.productTitle}. Please refresh your cart.`);
       }
       return sum + unitPrice * item.quantity;
