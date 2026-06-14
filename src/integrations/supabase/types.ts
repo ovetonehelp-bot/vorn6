@@ -211,19 +211,28 @@ export type Database = {
           backed_up_at: string
           data: Json
           handle: string
+          is_published: boolean
           position: number
+          source: string
+          updated_at: string
         }
         Insert: {
           backed_up_at?: string
           data: Json
           handle: string
+          is_published?: boolean
           position?: number
+          source?: string
+          updated_at?: string
         }
         Update: {
           backed_up_at?: string
           data?: Json
           handle?: string
+          is_published?: boolean
           position?: number
+          source?: string
+          updated_at?: string
         }
         Relationships: []
       }
