@@ -43,7 +43,9 @@ export async function fetchShopifyProducts(): Promise<ShopifyProduct[]> {
     const data = await res.json();
     const products = data.products as ShopifyProduct[];
     if (!products || products.length === 0) throw new Error("empty");
-    const managed = (backup.products ?? []).filter((p: any) => p._source === "admin") as ShopifyProduct[];
+    const managed = (backup.products ?? []).filter(
+      (p: any) => p._source === "admin",
+    ) as ShopifyProduct[];
     const managedHandles = new Set(managed.map((p) => p.handle));
     const hiddenHandles = new Set(backup.hidden_handles ?? []);
     return [

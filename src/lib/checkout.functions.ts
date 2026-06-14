@@ -45,7 +45,10 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
     const { data: productRows } = await supabaseAdmin
       .from("product_backup")
       .select("handle, data")
-      .in("handle", data.items.map((item) => item.productHandle))
+      .in(
+        "handle",
+        data.items.map((item) => item.productHandle),
+      )
       .eq("is_published", true);
     const catalog = new Map((productRows ?? []).map((row: any) => [row.handle, row.data]));
     const missingHandles = data.items
@@ -60,7 +63,9 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
     }
     const computedUsd = data.items.reduce((sum, item) => {
       const product = catalog.get(item.productHandle) as any;
-      const variant = product?.variants?.find((candidate: any) => Number(candidate.id) === item.variantId);
+      const variant = product?.variants?.find(
+        (candidate: any) => Number(candidate.id) === item.variantId,
+      );
       const basePrice = Number(variant?.price);
       const submittedPrice = Number(item.price);
       const allowedPrices = [basePrice, basePrice * 0.9, basePrice * 0.8];

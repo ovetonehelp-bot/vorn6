@@ -4,14 +4,26 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ProductInput = z.object({
   originalHandle: z.string().trim().min(1).max(120).optional(),
-  handle: z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  handle: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   title: z.string().trim().min(1).max(160),
   description: z.string().trim().max(5000).default(""),
   priceUsd: z.number().positive().max(100000),
-  images: z.array(z.string().max(2000).refine(
-    (value) => /^https?:\/\//.test(value) || value.startsWith("/api/public/backup-image?p="),
-    "Invalid image URL",
-  )).max(12),
+  images: z
+    .array(
+      z
+        .string()
+        .max(2000)
+        .refine(
+          (value) => /^https?:\/\//.test(value) || value.startsWith("/api/public/backup-image?p="),
+          "Invalid image URL",
+        ),
+    )
+    .max(12),
   sizes: z.array(z.string().trim().min(1).max(40)).max(30),
   published: z.boolean(),
 });
@@ -42,16 +54,21 @@ export const getAdminProducts = createServerFn({ method: "GET" })
       if (!response.ok) return { products: savedRows };
       const payload = (await response.json()) as { products?: any[] };
       const savedByHandle = new Map(savedRows.map((row) => [row.handle, row]));
-      const liveRows = (payload.products ?? []).map((product, position) => savedByHandle.get(product.handle) ?? ({
-        handle: product.handle,
-        data: product,
-        position,
-        is_published: true,
-        source: "shopify",
-        updated_at: product.updated_at ?? product.created_at,
-      }));
+      const liveRows = (payload.products ?? []).map(
+        (product, position) =>
+          savedByHandle.get(product.handle) ?? {
+            handle: product.handle,
+            data: product,
+            position,
+            is_published: true,
+            source: "shopify",
+            updated_at: product.updated_at ?? product.created_at,
+          },
+      );
       const liveHandles = new Set(liveRows.map((row) => row.handle));
-      return { products: [...liveRows, ...savedRows.filter((row) => !liveHandles.has(row.handle))] };
+      return {
+        products: [...liveRows, ...savedRows.filter((row) => !liveHandles.has(row.handle))],
+      };
     } catch {
       return { products: savedRows };
     }
