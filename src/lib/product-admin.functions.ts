@@ -8,7 +8,10 @@ const ProductInput = z.object({
   title: z.string().trim().min(1).max(160),
   description: z.string().trim().max(5000).default(""),
   priceUsd: z.number().positive().max(100000),
-  images: z.array(z.string().url().max(2000)).max(12),
+  images: z.array(z.string().max(2000).refine(
+    (value) => /^https?:\/\//.test(value) || value.startsWith("/api/public/backup-image?p="),
+    "Invalid image URL",
+  )).max(12),
   sizes: z.array(z.string().trim().min(1).max(40)).max(30),
   published: z.boolean(),
 });

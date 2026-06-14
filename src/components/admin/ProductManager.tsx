@@ -145,7 +145,7 @@ export function ProductManager() {
       <div className="mt-5 overflow-x-auto border border-border">
         <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-muted text-[10px] tracking-brand-wide uppercase text-muted-foreground">
-            <tr><th className="px-4 py-3 text-left">Product</th><th className="px-4 py-3 text-right">Base USD</th><th className="px-4 py-3 text-right">Checkout GHS</th><th className="px-4 py-3 text-left">Published</th><th className="px-4 py-3 text-right">Actions</th></tr>
+            <tr><th className="px-4 py-3 text-left">Product</th><th className="px-4 py-3 text-right">Base USD</th><th className="px-4 py-3 text-right">Displayed in Ghana</th><th className="px-4 py-3 text-right">Checkout GHS</th><th className="px-4 py-3 text-left">Published</th><th className="px-4 py-3 text-right">Actions</th></tr>
           </thead>
           <tbody>
             {rows.map((row) => {
@@ -154,6 +154,7 @@ export function ProductManager() {
                 <tr key={row.handle} className="border-t border-border">
                   <td className="px-4 py-3"><div className="font-medium">{row.data?.title}</div><div className="text-xs text-muted-foreground">/{row.handle} · {row.source}</div></td>
                   <td className="px-4 py-3 text-right tabular-nums">${usd.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{formatLocal(usd, GHS)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">GH₵{(usd * GHS.rate).toFixed(2)}</td>
                   <td className="px-4 py-3"><span className={row.is_published ? "text-emerald-600" : "text-muted-foreground"}>{row.is_published ? "Live" : "Draft"}</span></td>
                   <td className="px-4 py-3 text-right"><Button variant="ghost" size="sm" onClick={() => edit(row)}>Edit</Button><Button variant="outline" size="sm" disabled={busy} onClick={() => togglePublished(row)}>{row.is_published ? "Unpublish" : "Publish"}</Button></td>
