@@ -7,6 +7,7 @@ import { useShopifyProducts } from "@/hooks/useShopifyProducts";
 import { refreshProductStatus } from "@/hooks/useProductStatus";
 import { useServerFn } from "@tanstack/react-start";
 import { backupShopifyProducts, getBackupInfo } from "@/lib/backup.functions";
+import { ProductManager } from "@/components/admin/ProductManager";
 
 const ADMIN_EMAIL = "ovetonehelp@gmail.com";
 
@@ -372,6 +373,8 @@ function AdminLeadsPage() {
         <SiteModeControls />
 
         <DiscountCodesPanel />
+
+        <ProductManager />
 
         <div className="mt-6 flex flex-wrap gap-2">
           {ranges.map((r) => (
