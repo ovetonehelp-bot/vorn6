@@ -560,6 +560,14 @@ function AdminLeadsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[10px] font-mono">{o.paystack_reference}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDeleteOrder(o.id)}
+                        className="text-[10px] tracking-brand-wide uppercase border border-destructive text-destructive px-2 py-1 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
