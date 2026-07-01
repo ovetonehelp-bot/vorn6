@@ -141,6 +141,7 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
     }
 
     // Save pending order
+    const isTest = data.email.trim().toLowerCase() === "ovetonehelp@gmail.com";
     await supabaseAdmin.from("orders").insert({
       paystack_reference: reference,
       email: data.email,
@@ -153,6 +154,7 @@ export const createPaystackTransaction = createServerFn({ method: "POST" })
       status: "pending",
       discount_code: appliedCode,
       discount_amount_usd: discountUsd > 0 ? discountUsd : null,
+      is_test: isTest,
     });
 
     // Increment used_count on the discount code (best-effort).
