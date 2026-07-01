@@ -235,6 +235,21 @@ function AdminLeadsPage() {
     setEvents((evs) => evs.filter((e) => e.session_id !== sid));
   };
 
+  const handleDeleteOrder = async (id: string) => {
+    if (!confirm("Delete this order? This cannot be undone.")) return;
+    const { error } = await (supabase as any).from("orders").delete().eq("id", id);
+    if (error) {
+      alert("Failed: " + error.message);
+      return;
+    }
+    setOrders((os) => os.filter((o) => o.id !== id));
+  };
+
+  const visibleOrders = useMemo(
+    () => orders.filter((o: any) => !o.is_test),
+    [orders],
+  );
+
   const filtered = useMemo(() => {
     const start = rangeStart(range);
     const evs = start ? events.filter((e) => new Date(e.created_at) >= start) : events;
@@ -474,7 +489,12 @@ function AdminLeadsPage() {
         {/* Product performance */}
         <section className="mt-10">
           <h2 className="font-display font-black text-xl tracking-tight">
-            Orders ({orders.length})
+            Orders ({visibleOrders.length})
+            {orders.length !== visibleOrders.length && (
+              <span className="ml-2 text-[11px] font-normal text-muted-foreground">
+                · {orders.length - visibleOrders.length} test order(s) hidden
+              </span>
+            )}
           </h2>
           <div className="mt-4 border border-border overflow-x-auto">
             <table className="w-full text-sm">
@@ -486,17 +506,18 @@ function AdminLeadsPage() {
                   <th className="px-4 py-3 text-right">Amount</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Ref</th>
+                  <th className="px-4 py-3 text-right"></th>
                 </tr>
               </thead>
               <tbody>
-                {orders.length === 0 && (
+                {visibleOrders.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                       No orders yet.
                     </td>
                   </tr>
                 )}
-                {orders.map((o) => (
+                {visibleOrders.map((o) => (
                   <tr key={o.id} className="border-t border-border align-top">
                     <td className="px-4 py-3 whitespace-nowrap">
                       {new Date(o.created_at).toLocaleString()}
