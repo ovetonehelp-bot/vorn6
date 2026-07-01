@@ -162,6 +162,7 @@ export type Database = {
           discount_code: string | null
           email: string
           id: string
+          is_test: boolean
           items: Json
           paystack_reference: string
           paystack_response: Json | null
@@ -179,6 +180,7 @@ export type Database = {
           discount_code?: string | null
           email: string
           id?: string
+          is_test?: boolean
           items: Json
           paystack_reference: string
           paystack_response?: Json | null
@@ -196,6 +198,7 @@ export type Database = {
           discount_code?: string | null
           email?: string
           id?: string
+          is_test?: boolean
           items?: Json
           paystack_reference?: string
           paystack_response?: Json | null
