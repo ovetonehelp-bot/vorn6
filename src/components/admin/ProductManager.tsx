@@ -61,7 +61,7 @@ export function ProductManager() {
 
   const load = async () => {
     const result = await loadProducts();
-    setRows(result.products as Row[]);
+    setRows(((result as any)?.products ?? []) as Row[]);
   };
 
   useEffect(() => {
