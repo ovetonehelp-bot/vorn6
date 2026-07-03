@@ -14,14 +14,14 @@ export function ProductGrid({ title, products, viewAllHref, loading }: Props) {
   const headerRef = useReveal<HTMLDivElement>();
   return (
     <section className="mx-auto max-w-7xl px-5 pt-8 pb-20 md:px-8 md:pt-12 md:pb-28">
-      <div ref={headerRef} className="reveal mb-10 flex items-end justify-between border-b border-border pb-6">
-        <h2 className="text-2xl md:text-4xl font-display font-bold tracking-tight">
+      <div ref={headerRef} className="reveal-blur mb-10 flex items-end justify-between border-b border-border pb-6">
+        <h2 className="text-2xl md:text-4xl font-display font-bold tracking-tight text-shimmer">
           {title}
         </h2>
         {viewAllHref && (
           <Link
             to={viewAllHref}
-            className="text-[12px] tracking-brand-wide uppercase font-medium underline underline-offset-4 hover:opacity-60"
+            className="story-link text-[12px] tracking-brand-wide uppercase font-medium"
           >
             View All
           </Link>
@@ -49,7 +49,7 @@ export function ProductGrid({ title, products, viewAllHref, loading }: Props) {
 function RevealItem({ children, index }: { children: React.ReactNode; index: number }) {
   const ref = useReveal<HTMLDivElement>();
   return (
-    <div ref={ref} className="reveal" style={{ transitionDelay: `${Math.min(index * 60, 300)}ms` }}>
+    <div ref={ref} className="reveal-scale" style={{ transitionDelay: `${Math.min(index * 80, 400)}ms` }}>
       {children}
     </div>
   );
