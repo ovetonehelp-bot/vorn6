@@ -17,11 +17,18 @@ export function Hero({ image }: HeroProps = {}) {
     ? [image]
     : [img5.url, img6.url, img1.url, img2.url, img3.url, img4.url, hero];
   const [idx, setIdx] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
   useEffect(() => {
     if (images.length < 2) return;
     const id = setInterval(() => setIdx((i) => (i + 1) % images.length), 6000);
     return () => clearInterval(id);
   }, [images.length]);
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const title = "SET THE TONE.";
   return (
     <section className="relative h-[78svh] md:h-[100svh] w-full overflow-hidden bg-foreground text-background">
       {images.map((src, i) => (
@@ -32,33 +39,45 @@ export function Hero({ image }: HeroProps = {}) {
           className={`absolute inset-0 h-full w-full object-cover object-[center_25%] transition-opacity duration-[1500ms] ease-in-out ${
             i === idx ? "animate-hero-zoom" : ""
           }`}
-          style={{ opacity: i === idx ? 1 : 0 }}
+          style={{
+            opacity: i === idx ? 1 : 0,
+            transform: `translate3d(0, ${scrollY * 0.25}px, 0)`,
+          }}
           width={1920}
           height={1080}
         />
       ))}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/15 to-black/55" />
 
-      <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-5 text-center md:px-12">
-        <h1
-          className="font-display font-black text-[10vw] leading-[0.9] md:text-6xl lg:text-7xl tracking-tight text-background drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] animate-fade-up"
-        >
-          SET THE TONE.
+      <div
+        className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-5 text-center md:px-12"
+        style={{ transform: `translate3d(0, ${scrollY * -0.15}px, 0)`, opacity: Math.max(0, 1 - scrollY / 500) }}
+      >
+        <h1 className="font-display font-black text-[10vw] leading-[0.9] md:text-6xl lg:text-7xl tracking-tight text-background drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] overflow-hidden">
+          {title.split("").map((ch, i) => (
+            <span
+              key={i}
+              className="letter-rise"
+              style={{ animationDelay: `${i * 0.055}s`, whiteSpace: ch === " " ? "pre" : undefined }}
+            >
+              {ch}
+            </span>
+          ))}
         </h1>
         <p
           className="mt-4 text-[10px] md:text-xs tracking-brand-wide uppercase opacity-90 animate-fade-up"
-          style={{ animationDelay: "0.25s" }}
+          style={{ animationDelay: "1s" }}
         >
           Drop 001 — Limited Quantities. No Restocks.
         </p>
         <Link
           to="/shop"
-          className="mt-7 inline-flex items-center justify-center bg-background text-foreground px-10 py-3.5 text-[11px] tracking-brand-wide uppercase font-semibold hover:bg-foreground hover:text-background border border-background rounded-2xl animate-cta-glow transition-colors duration-300"
-          style={{ animationDelay: "0.4s" }}
+          className="sheen-parent mt-7 inline-flex items-center justify-center bg-background text-foreground px-10 py-3.5 text-[11px] tracking-brand-wide uppercase font-semibold hover:bg-foreground hover:text-background border border-background rounded-2xl animate-cta-glow transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] animate-fade-up"
+          style={{ animationDelay: "1.15s" }}
         >
           Shop The Drop
         </Link>
-        <p className="mt-4 text-[11px] md:text-xs tracking-brand-wide uppercase text-background/85">
+        <p className="mt-4 text-[11px] md:text-xs tracking-brand-wide uppercase text-background/85 animate-fade-up" style={{ animationDelay: "1.3s" }}>
           In Ghana? DM us on TikTok{" "}
           <a
             href="https://www.tiktok.com/@ovetone"
