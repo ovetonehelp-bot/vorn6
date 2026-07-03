@@ -46,14 +46,14 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
     <Link
       to="/products/$slug"
       params={{ slug: product.handle }}
-      className="group block"
+      className="group block card-tilt"
       onClick={handleLinkClick}
     >
       <div
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        className={`relative aspect-[4/5] overflow-hidden bg-muted transition-shadow duration-500 touch-pan-y ${
+        className={`sheen-parent relative aspect-[4/5] overflow-hidden bg-muted transition-shadow duration-500 touch-pan-y rounded-sm ${
           outOfStock ? "shadow-[0_0_30px_-2px_rgba(239,68,68,0.6)] ring-1 ring-red-500/40" : ""
         }`}
       >
@@ -67,7 +67,7 @@ export function ProductCard({ product }: { product: ShopifyProduct }) {
             height={1000}
             loading="lazy"
             draggable={false}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+            className={`img-zoom absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
               i === idx ? "opacity-100" : "opacity-0"
             }`}
           />
