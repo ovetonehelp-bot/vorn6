@@ -175,6 +175,12 @@
   }
   .animate-slow-zoom-out { animation: slow-zoom-out 18s ease-out forwards; }
 
+  @keyframes hero-zoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.12); }
+  }
+  .animate-hero-zoom { animation: hero-zoom 8s ease-out forwards; }
+
   /* Scroll reveal — initial state then play on visible */
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; will-change: opacity, transform; }
   .reveal.is-visible { opacity: 1; transform: translateY(0); }

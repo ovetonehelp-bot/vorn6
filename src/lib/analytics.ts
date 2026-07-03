@@ -1,6 +1,25 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const SESSION_KEY = "ovetone_session_id";
+const ADMIN_EMAIL = "ovetonehelp@gmail.com";
+
+let cachedIsAdmin: boolean | null = null;
+async function isAdminViewer(): Promise<boolean> {
+  if (cachedIsAdmin !== null) return cachedIsAdmin;
+  try {
+    const { data } = await supabase.auth.getSession();
+    const email = data.session?.user?.email?.toLowerCase() ?? "";
+    cachedIsAdmin = email === ADMIN_EMAIL;
+  } catch {
+    cachedIsAdmin = false;
+  }
+  return cachedIsAdmin;
+}
+if (typeof window !== "undefined") {
+  supabase.auth.onAuthStateChange((_e, s) => {
+    cachedIsAdmin = (s?.user?.email?.toLowerCase() ?? "") === ADMIN_EMAIL;
+  });
+}
 
 function getSessionId(): string {
   if (typeof window === "undefined") return "ssr";
@@ -55,6 +74,7 @@ interface TrackArgs {
 
 export async function trackEvent(args: TrackArgs): Promise<void> {
   if (typeof window === "undefined") return;
+  if (await isAdminViewer()) return;
   try {
     const geo = await getGeo();
     await supabase.from("analytics_events").insert({
