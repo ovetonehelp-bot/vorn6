@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
  * Pair with the `.reveal` utility class in styles.css.
  */
 export function useReveal<T extends HTMLElement = HTMLDivElement>(
-  options: IntersectionObserverInit = { threshold: 0.15 },
+  options: IntersectionObserverInit = { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
 ) {
   const ref = useRef<T | null>(null);
   useEffect(() => {
