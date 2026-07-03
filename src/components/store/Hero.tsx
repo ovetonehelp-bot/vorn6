@@ -29,7 +29,9 @@ export function Hero({ image }: HeroProps = {}) {
           key={src}
           src={src}
           alt="Ovetone Drop 001 — Set the tone"
-          className="absolute inset-0 h-full w-full object-cover object-[center_25%] transition-opacity duration-[1500ms] ease-in-out"
+          className={`absolute inset-0 h-full w-full object-cover object-[center_25%] transition-opacity duration-[1500ms] ease-in-out ${
+            i === idx ? "animate-hero-zoom" : ""
+          }`}
           style={{ opacity: i === idx ? 1 : 0 }}
           width={1920}
           height={1080}
